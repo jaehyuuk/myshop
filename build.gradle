@@ -22,15 +22,22 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-
-	implementation 'com.mysql:mysql-connector-j'
-
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// jpa
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'com.mysql:mysql-connector-j'
+
+	// jwt
+	implementation 'com.auth0:java-jwt:4.0.0'
+
+	// spring security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
 }
 
 tasks.named('test') {
