@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -25,15 +26,18 @@ public class User {
     private String profileImg;
     @Column(name = "introduce")
     private String introduce;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Builder
-    public User(Long id, String name, String email, String password, String profileImg, String introduce) {
+    public User(Long id, String name, String email, String password, String profileImg, String introduce, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.profileImg = profileImg;
         this.introduce = introduce;
+        this.createdAt = createdAt;
     }
 
 }
