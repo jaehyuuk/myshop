@@ -1,5 +1,5 @@
-# 2024 -myShop Project
-# 소셜 미디어 서비스 뿐만 아니라 상품 결제 및 예약 구매가 가능한 웹 서비스
+# 2024-예약 구매 사이트 개발 Project
+## 소셜 미디어 서비스 뿐만 아니라 상품 결제 및 예약 구매가 가능한 웹 서비스
 #### Project nickname : 예약마켓
 #### Project execution period : 2024.01.24~2024.02
 #### Project Hosting : [최재혁](https://easy-paprika-193.notion.site/4d407974e3e54f61ade6392974e2f491?pvs=4)
