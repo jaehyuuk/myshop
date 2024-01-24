@@ -3,6 +3,8 @@ package com.myshop.global.filter;
 import com.myshop.global.token.TokenManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -52,8 +54,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         Collection<String> excludeUrlPatterns = new LinkedHashSet<>();
 
-        excludeUrlPatterns.add("/api/users/**");
-        excludeUrlPatterns.add("/api/auth/**");
+        if (new AntPathRequestMatcher("/api/auth", HttpMethod.POST.toString()).matches(request)) {
+            return true;
+        }
+
+        if (new AntPathRequestMatcher("/api/users", HttpMethod.POST.toString()).matches(request)) {
+            return true;
+        }
 
         return excludeUrlPatterns.stream().anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getServletPath()));
     }
