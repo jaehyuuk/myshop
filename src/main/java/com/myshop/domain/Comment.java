@@ -34,4 +34,15 @@ public class Comment extends BaseTimeEntity {
         this.writer = writer;
         this.content = content;
     }
+
+    public void setPost(Post post) {
+        if (this.post != null) {
+            this.post.getComments().remove(this);
+        }
+        this.post = post;
+
+        if (!post.getComments().contains(this)) {
+            post.getComments().add(this);
+        }
+    }
 }

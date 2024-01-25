@@ -7,7 +7,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CommentDto {
-    private Long id;
     private String content;
     private String name;
     private String profileImg;
@@ -15,7 +14,6 @@ public class CommentDto {
 
     public static CommentDto getCommentDto(Comment comment) {
         return new CommentDto(
-                comment.getId(),
                 comment.getContent(),
                 comment.getWriter().getName(),
                 comment.getWriter().getProfileImg(),

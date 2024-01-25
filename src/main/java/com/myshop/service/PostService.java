@@ -1,10 +1,13 @@
 package com.myshop.service;
 
+import com.myshop.domain.Comment;
 import com.myshop.domain.Like;
 import com.myshop.domain.Post;
+import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.PostRepository;
+import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public void createPost(Long userId, CreatePostDto postDto) {
@@ -65,4 +69,34 @@ public class PostService {
         }
     }
 
+    @Transactional
+    public List<CommentDto> addComment(Long userId, Long postId, CreateCommentDto commentDto) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다.")
+        );
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+        post.addComment(commentDto.toEntity(user));
+
+        return post.getComments().stream()
+                .map(CommentDto::getCommentDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void removeComment(Long userId, Long postId, Long commentId) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다.")
+        );
+        Map<Long, Comment> comments = post.getComments()
+                .stream()
+                .collect(Collectors.toMap(Comment::getId, Function.identity()));
+
+        if (!comments.containsKey(commentId)) {
+            throw new BadRequestException("댓글 삭제는 댓글을 단 게시물에만 가능합니다.");
+        }
+
+        post.removeComment(comments.get(commentId), userId);
+    }
 }
