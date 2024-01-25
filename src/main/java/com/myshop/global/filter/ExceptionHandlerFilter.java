@@ -1,8 +1,10 @@
 package com.myshop.global.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myshop.global.exception.UsernameFromTokenException;
 import com.myshop.global.exception.handler.ErrorDetailResponse;
 import com.myshop.global.exception.handler.ErrorResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -13,16 +15,19 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ExceptionHandlerFilter extends OncePerRequestFilter {
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try{
             filterChain.doFilter(request,response);
-        } catch (UsernameFromTokenException ex){
+        } catch (UsernameFromTokenException ex) {
             log.info("UsernameFromTokenException handler filter");
             setErrorResponse(HttpStatus.FORBIDDEN,response,ex);
         } catch (RuntimeException ex){
@@ -35,11 +40,19 @@ public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
     }
 
-    public void setErrorResponse(HttpStatus status, HttpServletResponse response,Throwable ex){
+    private void setErrorResponse(HttpStatus status, HttpServletResponse response,Throwable ex){
         response.setStatus(status.value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        ErrorResponse errorResponse = new ErrorResponse(new ErrorDetailResponse(ex.getMessage()));
+        ErrorDetailResponse detailResponse = ErrorDetailResponse.builder().msg(ex.getMessage()).build();
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .errors(Arrays.asList(detailResponse))
+                .build();
+        try{
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
     }
 }

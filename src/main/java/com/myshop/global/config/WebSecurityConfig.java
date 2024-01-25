@@ -1,5 +1,6 @@
 package com.myshop.global.config;
 
+import com.myshop.global.filter.ExceptionHandlerFilter;
 import com.myshop.global.filter.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,14 +11,15 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.cors.CorsUtils;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Order(300)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-
     private final JwtTokenFilter jwtTokenFilter;
+    private final ExceptionHandlerFilter exceptionHandlerFilter;
 
     /**
      * PasswordEncoder를 Bean으로 등록
@@ -36,6 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/**").permitAll()
                 .antMatchers(HttpMethod.DELETE, "/api/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/**").permitAll()
                 .antMatchers(
                         "/",
                         "/ping",
@@ -55,6 +58,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .antMatcher("/**")
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtTokenFilter, BasicAuthenticationFilter.class)
+                .addFilterBefore(exceptionHandlerFilter, JwtTokenFilter.class);
     }
 }
