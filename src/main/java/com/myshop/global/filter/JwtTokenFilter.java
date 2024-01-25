@@ -62,10 +62,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             return true;
         }
 
-        if (new AntPathRequestMatcher("/api/users", HttpMethod.POST.toString()).matches(request)) {
-            return true;
-        }
-
         return excludeUrlPatterns.stream().anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getServletPath()));
     }
 }

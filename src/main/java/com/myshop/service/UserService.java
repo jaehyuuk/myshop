@@ -8,6 +8,7 @@ import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,10 +19,7 @@ public class UserService {
     private final PasswordEncoder bCryptPasswordEncoder;
     private final TokenManager tokenManager;
 
-    public List<User> getUsers() {
-        return userRepository.findAll();
-    }
-
+    @Transactional
     public TokenResponseDto join(RegisterDto registerDto) {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new BadRequestException("이미 가입되어있는 이메일 입니다.");
@@ -33,6 +31,7 @@ public class UserService {
         return tokenManager.generateToken(tokenDto);
     }
 
+    @Transactional
     public UserDto getAuth(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("로그인이 필요합니다.")
@@ -46,6 +45,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public TokenResponseDto login(LoginDto loginDto) {
         User user = userRepository.findByEmail(loginDto.getEmail()).orElseThrow(
                 () -> new BadRequestException("이메일이 존재하지 않습니다.")
@@ -53,5 +53,19 @@ public class UserService {
         user.checkPassword(loginDto.getPassword(), bCryptPasswordEncoder);
         TokenDto tokenDto = TokenDto.builder().userId(user.getId()).build();
         return tokenManager.generateToken(tokenDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
+
+    @Transactional
+    public void updateUser(Long userId, UpdateUserDto userDto) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("회원가입을 해주세요.")
+        );
+        user.update(userDto);
+        userRepository.save(user);
     }
 }
