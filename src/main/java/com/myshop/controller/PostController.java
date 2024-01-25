@@ -1,8 +1,6 @@
 package com.myshop.controller;
 
-import com.myshop.dto.CreatePostDto;
-import com.myshop.dto.PostDetailDto;
-import com.myshop.dto.PostDto;
+import com.myshop.dto.*;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
 import com.myshop.service.PostService;
@@ -40,4 +38,12 @@ public class PostController {
     ){
         postService.deletePost(postId);
     }
+
+    @PutMapping("/like/{post_id}")
+    public void likePost(@PathVariable("post_id") Long postId) {
+        TokenContext context = TokenContextHolder.getContext();
+        Long userId = context.getUserId();
+        postService.likePost(userId, postId);
+    }
+
 }

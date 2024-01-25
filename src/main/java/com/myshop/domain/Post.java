@@ -1,11 +1,13 @@
 package com.myshop.domain;
 
+import com.myshop.global.exception.BadRequestException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Getter
@@ -39,4 +41,20 @@ public class Post extends BaseTimeEntity {
         this.likes = likes;
         this.comments = comments;
     }
-}
+
+    public void addLike(Like like) {
+        this.likes.add(like);
+        if(like.getPost() != this) {
+            like.setPost(this);
+        }
+    }
+
+    public void removeLike(Like like) {
+        Iterator<Like> iterator = this.likes.iterator();
+        while (iterator.hasNext()) {
+            Like e = iterator.next();
+            if (like.equals(e)) {
+                iterator.remove();
+            }
+        }
+    }
