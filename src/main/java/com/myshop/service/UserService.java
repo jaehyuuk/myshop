@@ -93,7 +93,7 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("회원가입을 해주세요.")
         );
-        user.update(userDto);
+        user.updateUser(userDto);
         userRepository.save(user);
     }
 

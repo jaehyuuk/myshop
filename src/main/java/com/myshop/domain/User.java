@@ -48,28 +48,18 @@ public class User extends BaseTimeEntity {
         this.introduce = introduce;
     }
 
-    /**
-     * 비밀번호를 암호화
-     * @param passwordEncoder 암호화 할 인코더 클래스
-     * @return 변경된 유저 Entity
-     */
     public User hashPassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
         return this;
     }
 
-    /**
-     * 비밀번호 확인
-     * @param plainPassword 암호화 이전의 비밀번호
-     * @param passwordEncoder 암호화에 사용된 클래스
-     */
     public void checkPassword(String plainPassword, PasswordEncoder passwordEncoder) {
         if (!passwordEncoder.matches(plainPassword, this.password)) {
             throw new BadRequestException("패스워드를 확인하세요.");
         }
     }
 
-    public void update(UpdateUserDto userDto) {
+    public void updateUser(UpdateUserDto userDto) {
         if(userDto.getName() != null) this.name = userDto.getName();
         if(userDto.getProfileImg() != null) this.profileImg = userDto.getProfileImg();
         if(userDto.getIntroduce() != null) this.introduce = userDto.getIntroduce();
