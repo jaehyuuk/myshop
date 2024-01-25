@@ -54,7 +54,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         Collection<String> excludeUrlPatterns = new LinkedHashSet<>();
 
-        if (new AntPathRequestMatcher("/api/auth", HttpMethod.POST.toString()).matches(request)) {
+        if (new AntPathRequestMatcher("/api/auth/**", HttpMethod.POST.toString()).matches(request)) {
+            return true;
+        }
+
+        if (new AntPathRequestMatcher("/api/users", HttpMethod.GET.toString()).matches(request)) {
             return true;
         }
 
