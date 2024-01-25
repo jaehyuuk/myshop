@@ -1,6 +1,5 @@
 package com.myshop.controller;
 
-import com.myshop.domain.User;
 import com.myshop.dto.UpdatePasswordDto;
 import com.myshop.dto.UpdateUserDto;
 import com.myshop.dto.UserDto;

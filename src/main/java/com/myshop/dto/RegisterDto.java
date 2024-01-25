@@ -20,7 +20,6 @@ public class RegisterDto {
                 .password(password)
                 .profileImg(profileImg)
                 .introduce(introduce)
-                .createdAt(LocalDateTime.now())
                 .build();
     }
 }
