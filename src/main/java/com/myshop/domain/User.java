@@ -9,12 +9,14 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
 @Getter
-public class User  extends BaseTimeEntity{
+public class User extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
@@ -29,6 +31,12 @@ public class User  extends BaseTimeEntity{
     private String profileImg;
     @Column(name = "introduce")
     private String introduce;
+
+    @OneToMany(mappedBy = "follower")
+    private Set<Follow> followers = new HashSet<>();
+
+    @OneToMany(mappedBy = "following")
+    private Set<Follow> followings = new HashSet<>();
 
     @Builder
     public User(Long id, String name, String email, String password, String profileImg, String introduce) {
