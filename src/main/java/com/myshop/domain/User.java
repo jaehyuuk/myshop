@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -33,10 +33,10 @@ public class User extends BaseTimeEntity {
     private String introduce;
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> followers = new HashSet<>();
+    private List<Follow> followers = new ArrayList<>();
 
     @OneToMany(mappedBy = "following", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Follow> followings = new HashSet<>();
+    private List<Follow> followings = new ArrayList<>();
 
     @Builder
     public User(Long id, String name, String email, String password, String profileImg, String introduce) {

@@ -34,7 +34,7 @@ public class UserController {
         userService.updateUser(userId, userDto);
     }
 
-    @PostMapping("/update")
+    @PostMapping("/updatePassword")
     public void updatePassword(@RequestBody UpdatePasswordDto passwordDto) {
         TokenContext context = TokenContextHolder.getContext();
         Long userId = context.getUserId();

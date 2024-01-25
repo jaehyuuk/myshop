@@ -44,7 +44,7 @@ public class FollowService {
                 () -> new BadRequestException("팔로잉 사용자를 찾을 수 없습니다.")
         );
         if (!followRepository.findByFollowerAndFollowing(follower, following).isPresent()) {
-            throw new BadRequestException("없는 유저입니다.");
+            throw new BadRequestException("팔로우 하지 않은 유저입니다.");
         }
         followRepository.findByFollowerAndFollowing(follower, following)
                 .ifPresent(followRepository::delete);
