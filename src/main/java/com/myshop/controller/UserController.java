@@ -1,6 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.domain.User;
+import com.myshop.dto.UpdatePasswordDto;
 import com.myshop.dto.UpdateUserDto;
 import com.myshop.dto.UserDto;
 import com.myshop.global.context.TokenContext;
@@ -28,9 +29,17 @@ public class UserController {
     }
 
     @PostMapping
-    public void updateProfile(@RequestBody UpdateUserDto userDto) {
+    public void updateUser(@RequestBody UpdateUserDto userDto) {
         TokenContext context = TokenContextHolder.getContext();
         Long userId = context.getUserId();
         userService.updateUser(userId, userDto);
     }
+
+    @PostMapping("/update")
+    public void updatePassword(@RequestBody UpdatePasswordDto passwordDto) {
+        TokenContext context = TokenContextHolder.getContext();
+        Long userId = context.getUserId();
+        userService.updatePassword(userId, passwordDto);
+    }
+
 }

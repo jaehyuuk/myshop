@@ -96,4 +96,15 @@ public class UserService {
         user.update(userDto);
         userRepository.save(user);
     }
+
+    @Transactional
+    public void updatePassword(Long userId, UpdatePasswordDto passwordDto) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("회원가입을 해주세요.")
+        );
+        user.checkPassword(passwordDto.getPassword(), bCryptPasswordEncoder);
+        user.updatePassword(passwordDto);
+        user.hashPassword(bCryptPasswordEncoder);
+        userRepository.save(user);
+    }
 }

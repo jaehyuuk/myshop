@@ -1,5 +1,6 @@
 package com.myshop.domain;
 
+import com.myshop.dto.UpdatePasswordDto;
 import com.myshop.dto.UpdateUserDto;
 import com.myshop.global.exception.BadRequestException;
 import lombok.Builder;
@@ -68,5 +69,9 @@ public class User {
         if(userDto.getName() != null) this.name = userDto.getName();
         if(userDto.getProfileImg() != null) this.profileImg = userDto.getProfileImg();
         if(userDto.getIntroduce() != null) this.introduce = userDto.getIntroduce();
+    }
+
+    public void updatePassword(UpdatePasswordDto updatePasswordDto) {
+        if(updatePasswordDto.getPassword() != null) this.password = updatePasswordDto.getPassword();
     }
 }
