@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -56,8 +57,35 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> getUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getUsers() {
+        List<User> users = userRepository.findAll();
+        List<UserDto> userDtos = new ArrayList<>();
+        for (int i = 0; i < users.size(); i++) {
+            User user = users.get(i);
+            userDtos.add(UserDto.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .profileImg(user.getProfileImg())
+                    .introduce(user.getIntroduce())
+                    .build());
+        }
+        return userDtos;
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto getUserById(final Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 회원입니다.")
+        );
+        UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .profileImg(user.getProfileImg())
+                .introduce(user.getIntroduce())
+                .build();
+        return userDto;
     }
 
     @Transactional

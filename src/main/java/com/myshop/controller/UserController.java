@@ -2,6 +2,7 @@ package com.myshop.controller;
 
 import com.myshop.domain.User;
 import com.myshop.dto.UpdateUserDto;
+import com.myshop.dto.UserDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
 import com.myshop.service.UserService;
@@ -17,8 +18,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getUsers() {
+    public List<UserDto> getUsers() {
         return userService.getUsers();
+    }
+
+    @GetMapping("/{userId}")
+    public UserDto getUserById(@PathVariable("userId") Long userId) {
+        return userService.getUserById(userId);
     }
 
     @PostMapping
