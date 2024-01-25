@@ -1,6 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.CreatePostDto;
+import com.myshop.dto.PostDetailDto;
 import com.myshop.dto.PostDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
@@ -22,8 +23,14 @@ public class PostController {
         Long userId = context.getUserId();
         postService.createPost(userId, postDto);
     }
+
     @GetMapping
     public List<PostDto> getPosts() {
         return postService.getPosts();
+    }
+
+    @GetMapping("/{post_id}")
+    public PostDetailDto getPostById(@PathVariable("post_id") Long postId) {
+        return postService.getPostById(postId);
     }
 }
