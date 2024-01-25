@@ -34,4 +34,8 @@ public class PostService {
         );
         return new PostDetailDto(post);
     }
+
+    public void deletePost(Long postId) {
+        postRepository.deleteById(postId);
+    }
 }
