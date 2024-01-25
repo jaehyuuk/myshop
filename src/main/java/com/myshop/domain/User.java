@@ -1,8 +1,10 @@
 package com.myshop.domain;
 
+import com.myshop.global.exception.BadRequestException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -38,6 +40,27 @@ public class User {
         this.profileImg = profileImg;
         this.introduce = introduce;
         this.createdAt = createdAt;
+    }
+
+    /**
+     * 비밀번호를 암호화
+     * @param passwordEncoder 암호화 할 인코더 클래스
+     * @return 변경된 유저 Entity
+     */
+    public User hashPassword(PasswordEncoder passwordEncoder) {
+        this.password = passwordEncoder.encode(this.password);
+        return this;
+    }
+
+    /**
+     * 비밀번호 확인
+     * @param plainPassword 암호화 이전의 비밀번호
+     * @param passwordEncoder 암호화에 사용된 클래스
+     */
+    public void checkPassword(String plainPassword, PasswordEncoder passwordEncoder) {
+        if (!passwordEncoder.matches(plainPassword, this.password)) {
+            throw new BadRequestException("패스워드를 확인하세요.");
+        }
     }
 
 }
