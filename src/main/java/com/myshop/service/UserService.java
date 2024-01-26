@@ -4,6 +4,7 @@ import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.global.token.TokenManager;
+import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final TokenManager tokenManager;
 
@@ -105,5 +107,14 @@ public class UserService {
         user.updatePassword(passwordDto);
         user.hashPassword(bCryptPasswordEncoder);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("회원가입을 해주세요,")
+        );
+        postRepository.deleteAllByUser(user);
+        userRepository.delete(user);
     }
 }

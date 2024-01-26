@@ -41,4 +41,11 @@ public class UserController {
         userService.updatePassword(userId, passwordDto);
     }
 
+    @DeleteMapping
+    public void deleteUser() {
+        TokenContext context = TokenContextHolder.getContext();
+        Long userId = context.getUserId();
+        userService.deleteUser(userId);
+    }
+
 }
