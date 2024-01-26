@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "notifications")
 @NoArgsConstructor
-public class Notification extends BaseTimeEntity {
+public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -1,10 +1,11 @@
 package com.myshop.service;
 
 import com.myshop.domain.Follow;
+import com.myshop.domain.Notification;
 import com.myshop.domain.Post;
 import com.myshop.domain.User;
 import com.myshop.dto.FollowDto;
-import com.myshop.dto.PostDto;
+import com.myshop.dto.NewsFeedDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;
@@ -58,20 +59,26 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostDto> getFeeds(Long userId) {
+    public List<NewsFeedDto> getFeeds(Long userId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
         );
         List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
                 .map(follow -> follow.getFollowing().getId())
                 .collect(Collectors.toList());
+        List<Notification> notifications = new ArrayList<>();
         List<Post> posts = new ArrayList<>();
         for (int i = 0; i < followingIds.size(); i++) {
-            if(postRepository.existsByUserId(followingIds.get(i))){
+            if(notificationRepository.existsByToUserId(followingIds.get(i))){ // notification
+                notifications.add(notificationRepository.findByToUserId(followingIds.get(i)));
+            }
+            if(postRepository.existsByUserId(followingIds.get(i))){ // post
                 posts.add(postRepository.findByUserId(followingIds.get(i)));
             }
         }
-        return posts.stream().map(PostDto::getPostDto).collect(Collectors.toList());
+        List<NewsFeedDto> newsFeedDtos = new ArrayList<>();
+        newsFeedDtos.add(NewsFeedDto.getNewsfeedDto(notifications,posts));
+        return newsFeedDtos;
     }
 
 }

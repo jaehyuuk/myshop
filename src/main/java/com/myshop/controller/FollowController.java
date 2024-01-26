@@ -1,7 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.FollowDto;
-import com.myshop.dto.PostDto;
+import com.myshop.dto.NewsFeedDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
 import com.myshop.service.FollowService;
@@ -31,7 +31,7 @@ public class FollowController {
     }
 
     @GetMapping
-    public List<PostDto> getfeeds() {
+    public List<NewsFeedDto> getfeeds() {
         TokenContext context = TokenContextHolder.getContext();
         Long followerId = context.getUserId();
         return followService.getFeeds(followerId);
