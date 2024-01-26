@@ -14,21 +14,21 @@ public class Follow extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "follower_id")
     private User follower;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "following_id")
     private User following;
 
     public void setFollower(User follower) {
         this.follower = follower;
-        follower.getFollowings().add(this); // Add this follow instance to the follower's followings
+        follower.getFollowings().add(this);
     }
 
     public void setFollowing(User following) {
         this.following = following;
-        following.getFollowers().add(this); // Add this follow instance to the following's followers
+        following.getFollowers().add(this);
     }
 }
