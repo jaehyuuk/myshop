@@ -1,8 +1,10 @@
 package com.myshop.service;
 
 import com.myshop.domain.Follow;
+import com.myshop.domain.Post;
 import com.myshop.domain.User;
 import com.myshop.dto.FollowDto;
+import com.myshop.dto.PostDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.PostRepository;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,12 +59,29 @@ public class FollowService {
                 .ifPresent(followRepository::delete);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<FollowDto> getFollows(Long userId) {
         User follower = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
         );
         return follower.getFollowers().stream().map(FollowDto::new).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostDto> getFeeds(Long userId) {
+        userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
+        );
+        List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
+                .map(follow -> follow.getFollowing().getId())
+                .collect(Collectors.toList());
+        List<Post> posts = new ArrayList<>();
+        for (int i = 0; i < followingIds.size(); i++) {
+            if(postRepository.existsByUserId(followingIds.get(i))){
+                posts.add(postRepository.findByUserId(followingIds.get(i)));
+            }
+        }
+        return posts.stream().map(PostDto::getPostDto).collect(Collectors.toList());
     }
 
 }

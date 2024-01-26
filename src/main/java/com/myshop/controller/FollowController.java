@@ -1,6 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.FollowDto;
+import com.myshop.dto.PostDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
 import com.myshop.service.FollowService;
@@ -36,5 +37,11 @@ public class FollowController {
         return followService.getFollows(followerId);
     }
 
+    @GetMapping
+    public List<PostDto> getfeeds() {
+        TokenContext context = TokenContextHolder.getContext();
+        Long followerId = context.getUserId();
+        return followService.getFeeds(followerId);
+    }
 
 }
