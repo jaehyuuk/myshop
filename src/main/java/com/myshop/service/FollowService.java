@@ -2,17 +2,23 @@ package com.myshop.service;
 
 import com.myshop.domain.Follow;
 import com.myshop.domain.User;
+import com.myshop.dto.FollowDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
+import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class FollowService {
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final FollowRepository followRepository;
 
     @Transactional
@@ -48,6 +54,14 @@ public class FollowService {
         }
         followRepository.findByFollowerAndFollowing(follower, following)
                 .ifPresent(followRepository::delete);
+    }
+
+    @Transactional
+    public List<FollowDto> getFollows(Long userId) {
+        User follower = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
+        );
+        return follower.getFollowers().stream().map(FollowDto::new).collect(Collectors.toList());
     }
 
 }

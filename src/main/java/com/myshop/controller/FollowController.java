@@ -1,31 +1,40 @@
 package com.myshop.controller;
 
+import com.myshop.dto.FollowDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
 import com.myshop.service.FollowService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/feed")
 @RequiredArgsConstructor
 public class FollowController {
     private final FollowService followService;
 
     @PostMapping("/follow/{followingId}")
-    public ResponseEntity<?> follow(@PathVariable Long followingId) {
+    public void follow(@PathVariable Long followingId) {
         TokenContext context = TokenContextHolder.getContext();
         Long followerId = context.getUserId();
         followService.follow(followerId, followingId);
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/unfollow/{followingId}")
-    public ResponseEntity<?> unfollow(@PathVariable Long followingId) {
+    public void unfollow(@PathVariable Long followingId) {
         TokenContext context = TokenContextHolder.getContext();
         Long followerId = context.getUserId();
         followService.unfollow(followerId, followingId);
-        return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/follow")
+    public List<FollowDto> getFollows() {
+        TokenContext context = TokenContextHolder.getContext();
+        Long followerId = context.getUserId();
+        return followService.getFollows(followerId);
+    }
+
+
 }
