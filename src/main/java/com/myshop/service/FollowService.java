@@ -35,28 +35,15 @@ public class FollowService {
         User following = userRepository.findById(followingId).orElseThrow(
                 () -> new BadRequestException("팔로잉 사용자를 찾을 수 없습니다.")
         );
-        if (followRepository.findByFollowerAndFollowing(follower, following).isPresent()) {
-            throw new BadRequestException("이미 팔로우한 유저입니다.");
+        if (followRepository.findByFollowerAndFollowing(follower, following).isPresent()) { // 이미 팔로운 경우 언팔
+            followRepository.findByFollowerAndFollowing(follower, following)
+                    .ifPresent(followRepository::delete);
+        } else { // 아닌 경우 팔로우
+            Follow follow = new Follow();
+            follow.setFollower(follower);
+            follow.setFollowing(following);
+            followRepository.save(follow);
         }
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowing(following);
-        followRepository.save(follow);
-    }
-
-    @Transactional
-    public void unfollow(Long followerId, Long followingId) {
-        User follower = userRepository.findById(followerId).orElseThrow(
-                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
-        );
-        User following = userRepository.findById(followingId).orElseThrow(
-                () -> new BadRequestException("팔로잉 사용자를 찾을 수 없습니다.")
-        );
-        if (!followRepository.findByFollowerAndFollowing(follower, following).isPresent()) {
-            throw new BadRequestException("팔로우 하지 않은 유저입니다.");
-        }
-        followRepository.findByFollowerAndFollowing(follower, following)
-                .ifPresent(followRepository::delete);
     }
 
     @Transactional(readOnly = true)

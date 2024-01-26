@@ -23,13 +23,6 @@ public class FollowController {
         followService.follow(followerId, followingId);
     }
 
-    @DeleteMapping("/unfollow/{followingId}")
-    public void unfollow(@PathVariable Long followingId) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long followerId = context.getUserId();
-        followService.unfollow(followerId, followingId);
-    }
-
     @GetMapping("/follow")
     public List<FollowDto> getFollows() {
         TokenContext context = TokenContextHolder.getContext();
