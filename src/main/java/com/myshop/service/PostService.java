@@ -51,6 +51,9 @@ public class PostService {
 
     @Transactional
     public void likePost(Long userId, Long postId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 회원입니다.")
+        );
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 게시물입니다.")
         );
@@ -68,6 +71,7 @@ public class PostService {
         }
         else { // 좋아요
             post.addLike(Like.builder().userId(userId).build());
+            notificationRepository.mSave(userId, post.getUser().getId(), user.getName() + "님이 " + post.getUser().getName() + "님의 글을 좋아합니다.");
         }
     }
 

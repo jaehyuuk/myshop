@@ -7,6 +7,7 @@ import com.myshop.dto.FollowDto;
 import com.myshop.dto.PostDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
+import com.myshop.repository.NotificationRepository;
 import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class FollowService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final FollowRepository followRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public void follow(Long followerId, Long followingId) {
@@ -43,6 +45,7 @@ public class FollowService {
             follow.setFollower(follower);
             follow.setFollowing(following);
             followRepository.save(follow);
+            notificationRepository.mSave(followerId, followingId, follower.getName() + "님이 " + following.getName() + "님을 팔로우합니다.");
         }
     }
 
