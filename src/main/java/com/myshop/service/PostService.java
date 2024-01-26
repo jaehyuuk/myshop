@@ -6,6 +6,7 @@ import com.myshop.domain.Post;
 import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
+import com.myshop.repository.NotificationRepository;
 import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationRepository notificationRepository;
 
     @Transactional
     public void createPost(Long userId, CreatePostDto postDto) {
@@ -78,6 +80,8 @@ public class PostService {
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         post.addComment(commentDto.toEntity(user));
+
+        notificationRepository.mSave(userId, post.getUser().getId(), user.getName() + "님이 " + post.getUser().getName() + "님의 글에 댓글 남김");
 
         return post.getComments().stream()
                 .map(CommentDto::getCommentDto)
