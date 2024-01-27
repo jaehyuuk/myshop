@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,6 +17,9 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
+    private NotiType type;
+
     @ManyToOne
     @JoinColumn(name="from_user_id")
     private User fromUser;
@@ -24,5 +28,7 @@ public class Notification {
     @JoinColumn(name="to_user_id")
     private User toUser;
 
-    private String message;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
 }

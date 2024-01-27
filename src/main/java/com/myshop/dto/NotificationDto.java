@@ -4,12 +4,21 @@ import com.myshop.domain.Notification;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static com.myshop.domain.NotiType.*;
+
 @Getter
 @AllArgsConstructor
 public class NotificationDto {
     private String message;
 
     public static NotificationDto getNotification(Notification notification) {
-        return new NotificationDto(notification.getMessage());
+        String message = "";
+        message += notification.getFromUser().getName();
+        message += "님이 ";
+        message += notification.getToUser().getName();
+        if (notification.getType().equals(COMMENT)) message += "님의 글에 댓글을 남겼습니다.";
+        if (notification.getType().equals(LIKE)) message += "님의 글을 좋아합니다.";
+        if (notification.getType().equals(FOLLOW)) message += "님을 팔로우 합니다.";
+        return new NotificationDto(message);
     }
 }

@@ -1,9 +1,6 @@
 package com.myshop.service;
 
-import com.myshop.domain.Follow;
-import com.myshop.domain.Notification;
-import com.myshop.domain.Post;
-import com.myshop.domain.User;
+import com.myshop.domain.*;
 import com.myshop.dto.FollowDto;
 import com.myshop.dto.NewsFeedDto;
 import com.myshop.global.exception.BadRequestException;
@@ -46,7 +43,7 @@ public class FollowService {
             follow.setFollower(follower);
             follow.setFollowing(following);
             followRepository.save(follow);
-            notificationRepository.mSave(followerId, followingId, follower.getName() + "님이 " + following.getName() + "님을 팔로우합니다.");
+            notificationRepository.mSave(followerId, followingId, NotiType.FOLLOW.name());
         }
     }
 

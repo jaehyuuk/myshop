@@ -1,9 +1,6 @@
 package com.myshop.service;
 
-import com.myshop.domain.Comment;
-import com.myshop.domain.Like;
-import com.myshop.domain.Post;
-import com.myshop.domain.User;
+import com.myshop.domain.*;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.NotificationRepository;
@@ -71,7 +68,7 @@ public class PostService {
         }
         else { // 좋아요
             post.addLike(Like.builder().userId(userId).build());
-            notificationRepository.mSave(userId, post.getUser().getId(), user.getName() + "님이 " + post.getUser().getName() + "님의 글을 좋아합니다.");
+            notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name());
         }
     }
 
@@ -85,7 +82,7 @@ public class PostService {
         );
         post.addComment(commentDto.toEntity(user));
 
-        notificationRepository.mSave(userId, post.getUser().getId(), user.getName() + "님이 " + post.getUser().getName() + "님의 글에 댓글 남김");
+        notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name());
 
         return post.getComments().stream()
                 .map(CommentDto::getCommentDto)
