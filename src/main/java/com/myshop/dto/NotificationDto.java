@@ -4,12 +4,15 @@ import com.myshop.domain.Notification;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 import static com.myshop.domain.NotiType.*;
 
 @Getter
 @AllArgsConstructor
 public class NotificationDto {
     private String message;
+    private LocalDateTime createdAt;
 
     public static NotificationDto getNotification(Notification notification) {
         String message = "";
@@ -19,6 +22,6 @@ public class NotificationDto {
         if (notification.getType().equals(COMMENT)) message += "님의 글에 댓글을 남겼습니다.";
         if (notification.getType().equals(LIKE)) message += "님의 글을 좋아합니다.";
         if (notification.getType().equals(FOLLOW)) message += "님을 팔로우 합니다.";
-        return new NotificationDto(message);
+        return new NotificationDto(message, notification.getCreatedAt());
     }
 }
