@@ -63,18 +63,20 @@ public class FollowService {
         List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
                 .map(follow -> follow.getFollowing().getId())
                 .collect(Collectors.toList());
-        List<Notification> notifications = new ArrayList<>();
+        List<Notification> notis = new ArrayList<>();
         List<Post> posts = new ArrayList<>();
         for (int i = 0; i < followingIds.size(); i++) {
             if(notificationRepository.existsByToUserId(followingIds.get(i))){ // notification
-                notifications.add(notificationRepository.findByToUserId(followingIds.get(i)));
+                List<Notification> notifications = notificationRepository.findByToUserId(followingIds.get(i));
+                for (Notification noti : notifications) { notis.add(noti);}
             }
             if(postRepository.existsByUserId(followingIds.get(i))){ // post
-                posts.add(postRepository.findByUserId(followingIds.get(i)));
+                List<Post> postList = postRepository.findByUserId(followingIds.get(i));
+                for (Post post : postList) { posts.add(post);}
             }
         }
         List<NewsFeedDto> newsFeedDtos = new ArrayList<>();
-        newsFeedDtos.add(NewsFeedDto.getNewsfeedDto(notifications,posts));
+        newsFeedDtos.add(NewsFeedDto.getNewsfeedDto(notis,posts));
         return newsFeedDtos;
     }
 
