@@ -43,7 +43,7 @@ public class FollowService {
             follow.setFollower(follower);
             follow.setFollowing(following);
             followRepository.save(follow);
-            notificationRepository.mSave(followerId, followingId, NotiType.FOLLOW.name());
+            notificationRepository.mSave(followerId, followingId, NotiType.FOLLOW.name(), follow.getId());
         }
     }
 

@@ -21,12 +21,15 @@ public class Notification {
     private NotiType type;
 
     @ManyToOne
-    @JoinColumn(name="from_user_id")
+    @JoinColumn(name = "from_user_id")
     private User fromUser;
 
     @ManyToOne
-    @JoinColumn(name="to_user_id")
+    @JoinColumn(name = "to_user_id")
     private User toUser;
+
+    @Column(name = "type_id")
+    private Long typeId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

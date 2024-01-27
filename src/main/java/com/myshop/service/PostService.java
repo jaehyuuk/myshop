@@ -68,7 +68,7 @@ public class PostService {
         }
         else { // 좋아요
             post.addLike(Like.builder().userId(userId).build());
-            notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name());
+            notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name(), postId);
         }
     }
 
@@ -82,7 +82,7 @@ public class PostService {
         );
         post.addComment(commentDto.toEntity(user));
 
-        notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name());
+        notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name(), postId);
 
         return post.getComments().stream()
                 .map(CommentDto::getCommentDto)
