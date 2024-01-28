@@ -6,7 +6,7 @@ import com.myshop.dto.TokenResponseDto;
 import com.myshop.dto.UserDto;
 import com.myshop.global.context.TokenContext;
 import com.myshop.global.context.TokenContextHolder;
-import com.myshop.service.UserService;
+import com.myshop.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,23 +14,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/join")
     public TokenResponseDto join(@RequestBody RegisterDto registerDto) {
-        return userService.join(registerDto);
+        return authService.join(registerDto);
     }
 
     @GetMapping
     public UserDto getAuth() {
         TokenContext context = TokenContextHolder.getContext();
         Long userId = context.getUserId();
-        return userService.getAuth(userId);
+        return authService.getAuth(userId);
     }
 
     @PostMapping
     public TokenResponseDto login(@RequestBody LoginDto loginDto) {
-        return userService.login(loginDto);
+        return authService.login(loginDto);
     }
 
 }
