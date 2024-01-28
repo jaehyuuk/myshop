@@ -1,8 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.*;
-import com.myshop.global.context.TokenContext;
-import com.myshop.global.context.TokenContextHolder;
+import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +15,10 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public void createPost(@RequestBody CreatePostDto postDto) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+    public void createPost(
+            @RequestBody CreatePostDto postDto
+    ) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
         postService.createPost(userId, postDto);
     }
 
@@ -28,7 +28,9 @@ public class PostController {
     }
 
     @GetMapping("/{post_id}")
-    public PostDetailDto getPostById(@PathVariable("post_id") Long postId) {
+    public PostDetailDto getPostById(
+            @PathVariable("post_id") Long postId
+    ) {
         return postService.getPostById(postId);
     }
 
@@ -40,9 +42,10 @@ public class PostController {
     }
 
     @PutMapping("/like/{post_id}")
-    public void likePost(@PathVariable("post_id") Long postId) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+    public void likePost(
+            @PathVariable("post_id") Long postId
+    ) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
         postService.likePost(userId, postId);
     }
 
@@ -51,8 +54,7 @@ public class PostController {
             @PathVariable(value = "post-id") Long postId,
             @RequestBody CreateCommentDto commentDto
     ) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+        Long userId = AuthenticationUtils.getUserIdByToken();
         return postService.addComment(userId, postId, commentDto);
     }
 
@@ -61,8 +63,7 @@ public class PostController {
             @PathVariable(value = "post-id") Long postId,
             @PathVariable(value = "comment-id") Long commentId
     ) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+        Long userId = AuthenticationUtils.getUserIdByToken();
         postService.removeComment(userId, postId, commentId);
     }
 

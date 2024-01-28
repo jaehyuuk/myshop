@@ -46,10 +46,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout() {
+    public void logout(User user) {
         //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User user = userDetails.getUser(); // UserDetailsImpl에서 User 객체를 반환하는 메소드를 사용
         String key = "JWT_TOKEN:" + user.getEmail();
         if (redisTemplate.opsForValue().get(key) != null) {
             redisTemplate.delete(key); // Token 삭제

@@ -3,8 +3,7 @@ package com.myshop.controller;
 import com.myshop.dto.UpdatePasswordDto;
 import com.myshop.dto.UpdateUserDto;
 import com.myshop.dto.UserDto;
-import com.myshop.global.context.TokenContext;
-import com.myshop.global.context.TokenContextHolder;
+import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -23,28 +22,31 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public UserDto getUserById(@PathVariable("userId") Long userId) {
+    public UserDto getUserById(
+            @PathVariable("userId") Long userId
+    ) {
         return userService.getUserById(userId);
     }
 
-    @PostMapping
-    public void updateUser(@RequestBody UpdateUserDto userDto) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+    @PostMapping("/update")
+    public void updateUser(
+            @RequestBody UpdateUserDto userDto
+    ) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
         userService.updateUser(userId, userDto);
     }
 
-    @PostMapping("/updatePassword")
-    public void updatePassword(@RequestBody UpdatePasswordDto passwordDto) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+    @PostMapping("/update/password")
+    public void updatePassword(
+            @RequestBody UpdatePasswordDto passwordDto
+    ) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
         userService.updatePassword(userId, passwordDto);
     }
 
     @DeleteMapping
     public void deleteUser() {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
+        Long userId = AuthenticationUtils.getUserIdByToken();
         userService.deleteUser(userId);
     }
 

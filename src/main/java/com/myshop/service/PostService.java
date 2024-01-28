@@ -48,7 +48,7 @@ public class PostService {
 
     @Transactional
     public void likePost(Long userId, Long postId) {
-        User user = userRepository.findById(userId).orElseThrow(
+        userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 회원입니다.")
         );
         Post post = postRepository.findById(postId).orElseThrow(

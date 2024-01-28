@@ -2,8 +2,7 @@ package com.myshop.controller;
 
 import com.myshop.dto.FollowDto;
 import com.myshop.dto.NewsFeedDto;
-import com.myshop.global.context.TokenContext;
-import com.myshop.global.context.TokenContextHolder;
+import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -11,29 +10,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/feed")
+@RequestMapping("/api/follows")
 @RequiredArgsConstructor
 public class FollowController {
     private final FollowService followService;
 
-    @PostMapping("/follow/{followingId}")
-    public void follow(@PathVariable Long followingId) {
-        TokenContext context = TokenContextHolder.getContext();
-        Long followerId = context.getUserId();
+    @PostMapping("/{followingId}")
+    public void follow(
+            @PathVariable Long followingId
+    ) {
+        Long followerId = AuthenticationUtils.getUserIdByToken();
         followService.follow(followerId, followingId);
     }
 
-    @GetMapping("/follow")
+    @GetMapping
     public List<FollowDto> getFollows() {
-        TokenContext context = TokenContextHolder.getContext();
-        Long followerId = context.getUserId();
+        Long followerId = AuthenticationUtils.getUserIdByToken();
         return followService.getFollows(followerId);
     }
 
-    @GetMapping
+    @GetMapping("/feed")
     public List<NewsFeedDto> getfeeds() {
-        TokenContext context = TokenContextHolder.getContext();
-        Long followerId = context.getUserId();
+        Long followerId = AuthenticationUtils.getUserIdByToken();
         return followService.getFeeds(followerId);
     }
 
