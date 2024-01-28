@@ -31,14 +31,17 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'com.mysql:mysql-connector-j'
 
-	// jwt
-	implementation 'com.auth0:java-jwt:4.0.0'
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// spring security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
-	// redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	// jwt
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+
+	// valid
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {

@@ -17,20 +17,18 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/join")
-    public TokenResponseDto join(@RequestBody RegisterDto registerDto) {
-        return authService.join(registerDto);
+    public void join(@RequestBody RegisterDto registerDto) {
+        authService.join(registerDto);
     }
 
-    @GetMapping
-    public UserDto getAuth() {
-        TokenContext context = TokenContextHolder.getContext();
-        Long userId = context.getUserId();
-        return authService.getAuth(userId);
-    }
-
-    @PostMapping
+    @PostMapping("/login")
     public TokenResponseDto login(@RequestBody LoginDto loginDto) {
         return authService.login(loginDto);
+    }
+
+    @PostMapping("/logout")
+    public void logout() {
+        authService.logout();
     }
 
 }

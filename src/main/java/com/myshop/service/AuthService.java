@@ -3,9 +3,12 @@ package com.myshop.service;
 import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.global.token.TokenManager;
+import com.myshop.global.token.JwtTokenProvider;
 import com.myshop.repository.UserRepository;
+import com.myshop.service.custom.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,32 +18,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
-    private final TokenManager tokenManager;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final RedisTemplate redisTemplate;
 
     @Transactional
-    public TokenResponseDto join(RegisterDto registerDto) {
+    public void join(RegisterDto registerDto) {
         if (userRepository.existsByEmail(registerDto.getEmail())) {
             throw new BadRequestException("이미 가입되어있는 이메일 입니다.");
         }
         User user = registerDto.toEntity();
         user.hashPassword(bCryptPasswordEncoder);
         userRepository.save(user);
-        TokenDto tokenDto = TokenDto.builder().userId(user.getId()).build();
-        return tokenManager.generateToken(tokenDto);
-    }
-
-    @Transactional
-    public UserDto getAuth(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("로그인이 필요합니다.")
-        );
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .profileImg(user.getProfileImg())
-                .introduce(user.getIntroduce())
-                .build();
     }
 
     @Transactional
@@ -49,8 +37,22 @@ public class AuthService {
                 () -> new BadRequestException("이메일이 존재하지 않습니다.")
         );
         user.checkPassword(loginDto.getPassword(), bCryptPasswordEncoder);
-        TokenDto tokenDto = TokenDto.builder().userId(user.getId()).build();
-        return tokenManager.generateToken(tokenDto);
+
+        //로그인 성공시 jwt 토큰 생성
+        String token = jwtTokenProvider.createToken(user.getEmail());
+        redisTemplate.opsForValue().set("JWT_TOKEN:" + user.getEmail(), token);
+
+        return new TokenResponseDto(token);
     }
 
+    @Transactional
+    public void logout() {
+        //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userDetails.getUser(); // UserDetailsImpl에서 User 객체를 반환하는 메소드를 사용
+        String key = "JWT_TOKEN:" + user.getEmail();
+        if (redisTemplate.opsForValue().get(key) != null) {
+            redisTemplate.delete(key); // Token 삭제
+        }
+    }
 }
