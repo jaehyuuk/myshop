@@ -31,6 +31,9 @@ public class User extends BaseTimeEntity {
     private String profileImg;
     @Column(name = "introduce")
     private String introduce;
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Follow> followers = new ArrayList<>();
@@ -46,6 +49,7 @@ public class User extends BaseTimeEntity {
         this.password = password;
         this.profileImg = profileImg;
         this.introduce = introduce;
+        this.role = Role.USER;
     }
 
     public User hashPassword(PasswordEncoder passwordEncoder) {
