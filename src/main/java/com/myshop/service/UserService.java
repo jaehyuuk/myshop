@@ -55,6 +55,7 @@ public class UserService {
         );
         user.checkPassword(loginDto.getPassword(), bCryptPasswordEncoder);
         TokenDto tokenDto = TokenDto.builder().userId(user.getId()).build();
+
         return tokenManager.generateToken(tokenDto);
     }
 

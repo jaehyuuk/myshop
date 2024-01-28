@@ -12,3 +12,10 @@ services:
       - --collation-server=utf8mb4_unicode_ci
     volumes:
       - ./data/:/var/lib/mysql # -v 옵션 (디렉토리 마운트 설정)
+  cache-database:
+    image: redis
+    container_name: spring_cache
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
