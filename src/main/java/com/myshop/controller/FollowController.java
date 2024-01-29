@@ -19,20 +19,20 @@ public class FollowController {
     public void follow(
             @PathVariable Long followingId
     ) {
-        Long followerId = AuthenticationUtils.getUserIdByToken();
-        followService.follow(followerId, followingId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        followService.follow(userId, followingId);
     }
 
     @GetMapping
     public List<FollowDto> getFollows() {
-        Long followerId = AuthenticationUtils.getUserIdByToken();
-        return followService.getFollows(followerId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        return followService.getFollows(userId);
     }
 
     @GetMapping("/feed")
     public List<NewsFeedDto> getfeeds() {
-        Long followerId = AuthenticationUtils.getUserIdByToken();
-        return followService.getFeeds(followerId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        return followService.getFeeds(userId);
     }
 
 }

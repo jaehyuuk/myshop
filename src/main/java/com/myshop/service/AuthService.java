@@ -32,7 +32,7 @@ public class AuthService {
     @Transactional
     public TokenResponseDto login(LoginDto loginDto) {
         User user = userRepository.findByEmail(loginDto.getEmail()).orElseThrow(
-                () -> new BadRequestException("이메일이 존재하지 않습니다.")
+                () -> new BadRequestException("이메일을 확인하세요.")
         );
         user.checkPassword(loginDto.getPassword(), bCryptPasswordEncoder);
 

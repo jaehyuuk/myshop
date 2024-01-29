@@ -40,7 +40,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserDto getUserById(final Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 회원입니다.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         UserDto userDto = UserDto.builder()
                 .id(user.getId())
@@ -55,7 +55,7 @@ public class UserService {
     @Transactional
     public void updateUser(Long userId, UpdateUserDto userDto) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("회원가입을 해주세요.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         user.updateUser(userDto);
         userRepository.save(user);
@@ -64,7 +64,7 @@ public class UserService {
     @Transactional
     public void updatePassword(Long userId, UpdatePasswordDto passwordDto) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("회원가입을 해주세요.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         user.updatePassword(passwordDto);
         user.hashPassword(bCryptPasswordEncoder);
@@ -74,7 +74,7 @@ public class UserService {
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("회원가입을 해주세요,")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         postRepository.deleteAllByUser(user);
         userRepository.delete(user);

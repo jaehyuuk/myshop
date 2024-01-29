@@ -25,40 +25,40 @@ public class FollowService {
     private final NotificationRepository notificationRepository;
 
     @Transactional
-    public void follow(Long followerId, Long followingId) {
-        if (followerId.equals(followingId)) {
+    public void follow(Long userId, Long followingId) {
+        if (userId.equals(followingId)) {
             throw new BadRequestException("사용자는 자신을 팔로우할 수 없습니다.");
         }
-        User follower = userRepository.findById(followerId).orElseThrow(
-                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         User following = userRepository.findById(followingId).orElseThrow(
-                () -> new BadRequestException("팔로잉 사용자를 찾을 수 없습니다.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        if (followRepository.findByFollowerAndFollowing(follower, following).isPresent()) { // 이미 팔로운 경우 언팔
-            followRepository.findByFollowerAndFollowing(follower, following)
+        if (followRepository.findByFollowerAndFollowing(user, following).isPresent()) { // 이미 팔로운 경우 언팔
+            followRepository.findByFollowerAndFollowing(user, following)
                     .ifPresent(followRepository::delete);
         } else { // 아닌 경우 팔로우
             Follow follow = new Follow();
-            follow.setFollower(follower);
+            follow.setFollower(user);
             follow.setFollowing(following);
             followRepository.save(follow);
-            notificationRepository.mSave(followerId, followingId, NotiType.FOLLOW.name(), follow.getId());
+            notificationRepository.mSave(userId, followingId, NotiType.FOLLOW.name(), follow.getId());
         }
     }
 
     @Transactional(readOnly = true)
     public List<FollowDto> getFollows(Long userId) {
-        User follower = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        return follower.getFollowers().stream().map(FollowDto::new).collect(Collectors.toList());
+        return user.getFollowers().stream().map(FollowDto::new).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<NewsFeedDto> getFeeds(Long userId) {
         userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("팔로워 사용자를 찾을 수 없습니다.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
                 .map(follow -> follow.getFollowing().getId())
@@ -79,5 +79,4 @@ public class FollowService {
         newsFeedDtos.add(NewsFeedDto.getNewsfeedDto(notis,posts));
         return newsFeedDtos;
     }
-
 }

@@ -24,6 +24,9 @@ public class PostService {
 
     @Transactional
     public void createPost(Long userId, CreatePostDto postDto) {
+        userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
         postRepository.save(postDto.toEntity(userId));
     }
 
@@ -43,13 +46,16 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postId) {
+        postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다.")
+        );
         postRepository.deleteById(postId);
     }
 
     @Transactional
     public void likePost(Long userId, Long postId) {
         userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 회원입니다.")
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 게시물입니다.")
@@ -74,11 +80,11 @@ public class PostService {
 
     @Transactional
     public List<CommentDto> addComment(Long userId, Long postId, CreateCommentDto commentDto) {
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다.")
         );
         post.addComment(commentDto.toEntity(user));
 
@@ -91,6 +97,9 @@ public class PostService {
 
     @Transactional
     public void removeComment(Long userId, Long postId, Long commentId) {
+        userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 게시물입니다.")
         );
