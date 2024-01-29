@@ -146,9 +146,9 @@ class UserServiceTest {
                 .password("oldPassword")
                 .build();
         user.hashPassword(bCryptPasswordEncoder);
-        UpdatePasswordDto passwordDto = UpdatePasswordDto.builder()
-                .password("newPassword")
-                .build();
+        UpdatePasswordDto passwordDto = new UpdatePasswordDto();
+        passwordDto.setPassword("newPassword"); // Setter를 이용하여 비밀번호 설정
+
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
         given(bCryptPasswordEncoder.encode("newPassword")).willReturn("encodedNewPassword");
         given(bCryptPasswordEncoder.matches("newPassword", "encodedNewPassword")).willReturn(true);
