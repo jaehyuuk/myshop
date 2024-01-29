@@ -1,5 +1,6 @@
 package com.myshop.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -34,4 +35,13 @@ public class Notification {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Builder
+    public Notification(Long id, NotiType type, User fromUser, User toUser, Long typeId, LocalDateTime createdAt) {
+        this.id = id;
+        this.type = type;
+        this.fromUser = fromUser;
+        this.toUser = toUser;
+        this.typeId = typeId;
+        this.createdAt = createdAt;
+    }
 }
