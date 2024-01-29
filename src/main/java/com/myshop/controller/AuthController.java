@@ -8,6 +8,8 @@ import com.myshop.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -16,14 +18,14 @@ public class AuthController {
 
     @PostMapping("/join")
     public void join(
-            @RequestBody RegisterDto registerDto
+            @Valid @RequestBody RegisterDto registerDto
     ) {
         authService.join(registerDto);
     }
 
     @PostMapping("/login")
     public TokenResponseDto login(
-            @RequestBody LoginDto loginDto
+            @Valid @RequestBody LoginDto loginDto
     ) {
         return authService.login(loginDto);
     }
