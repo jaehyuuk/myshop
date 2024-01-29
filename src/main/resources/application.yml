@@ -9,7 +9,7 @@ spring:
         format_sql: true
         show_sql: true
   datasource:
-    url: jdbc:mysql://localhost:3307/myshop?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+    url: jdbc:mysql://localhost:3307/my_shop?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
     username: root
     password: root
   redis:
@@ -19,4 +19,4 @@ spring:
 #jwt
 jwt:
   secret: secrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtet
-  issuer: myshop
+  issuer: my_shop
