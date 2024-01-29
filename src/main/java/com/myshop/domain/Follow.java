@@ -1,5 +1,6 @@
 package com.myshop.domain;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -30,5 +31,12 @@ public class Follow extends BaseTimeEntity {
     public void setFollowing(User following) {
         this.following = following;
         following.getFollowers().add(this);
+    }
+
+    @Builder
+    public Follow(Long id, User follower, User following) {
+        this.id = id;
+        this.follower = follower;
+        this.following = following;
     }
 }
