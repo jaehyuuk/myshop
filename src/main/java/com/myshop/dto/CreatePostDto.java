@@ -2,6 +2,7 @@ package com.myshop.dto;
 
 import com.myshop.domain.Post;
 import com.myshop.domain.User;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -17,5 +18,10 @@ public class CreatePostDto {
                 .likes(new ArrayList<>())
                 .comments(new ArrayList<>())
                 .build();
+    }
+
+    @Builder
+    public CreatePostDto(String content) {
+        this.content = content;
     }
 }
