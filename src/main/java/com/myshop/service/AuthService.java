@@ -44,7 +44,10 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(User user) {
+    public void logout(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
         //Token에서 로그인한 사용자 정보 get해 로그아웃 처리
         String key = "JWT_TOKEN:" + user.getEmail();
         if (redisTemplate.opsForValue().get(key) != null) {

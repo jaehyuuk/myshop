@@ -136,20 +136,25 @@ class AuthServiceTest {
     @DisplayName("로그아웃 테스트")
     void logoutTest() {
         // given
+        Long userId = 1L;
         String email = "user@example.com";
         User user = User.builder()
+                .id(userId)
                 .email(email)
                 .build();
+
+        // UserRepository를 모의 객체로 설정하여 User 객체를 반환하도록 함
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         String key = "JWT_TOKEN:" + email;
         ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
 
-        // Mock the interaction with Redis
+        // Redis와의 상호작용을 모의 객체로 설정
         when(redisTemplate.opsForValue()).thenReturn(valueOperationsMock);
         when(valueOperationsMock.get(key)).thenReturn("jwtToken");
 
         // when
-        authService.logout(user);
+        authService.logout(userId);
 
         // then
         verify(redisTemplate).delete(key);
