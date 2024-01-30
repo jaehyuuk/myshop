@@ -23,17 +23,18 @@ public class PostService {
     private final NotificationRepository notificationRepository;
 
     @Transactional
-    public void createPost(Long userId, CreatePostDto postDto) {
+    public PostDetailDto createPost(Long userId, CreatePostDto postDto) {
         userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        postRepository.save(postDto.toEntity(userId));
+        Post post = postRepository.save(postDto.toEntity(userId));
+        return getPostById(post.getId());
     }
 
     @Transactional(readOnly = true)
     public List<PostDto> getPosts() {
         List<Post> posts = postRepository.findAll();
-        return posts.stream().map(PostDto::new).collect(Collectors.toList());
+        return posts.stream().map(PostDto::of).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +42,7 @@ public class PostService {
         Post post = postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 게시물입니다.")
         );
-        return new PostDetailDto(post);
+        return PostDetailDto.of(post);
     }
 
     @Transactional
@@ -91,7 +92,7 @@ public class PostService {
         notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name(), postId);
 
         return post.getComments().stream()
-                .map(CommentDto::getCommentDto)
+                .map(CommentDto::of)
                 .collect(Collectors.toList());
     }
 

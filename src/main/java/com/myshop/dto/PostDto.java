@@ -2,10 +2,12 @@ package com.myshop.dto;
 
 import com.myshop.domain.Post;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
-@AllArgsConstructor
 public class PostDto {
     private Long id;
     private String content;
@@ -14,25 +16,30 @@ public class PostDto {
     private Long userId;
     private Integer likeCount;
     private Integer commentCount;
+    private LocalDateTime createdDate;
 
-    public PostDto(Post post) {
-        id = post.getId();
-        content = post.getContent();
-        name = post.getUser().getName();
-        profileImg = post.getUser().getProfileImg();
-        userId = post.getUser().getId();
-        likeCount = post.getLikes().size();
-        commentCount = post.getComments().size();
+    @Builder
+    public PostDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, LocalDateTime createdDate) {
+        this.id = id;
+        this.content = content;
+        this.name = name;
+        this.profileImg = profileImg;
+        this.userId = userId;
+        this.likeCount = likeCount;
+        this.commentCount = commentCount;
+        this.createdDate = createdDate;
     }
 
-    public static PostDto getPostDto(Post post) {
-        return new PostDto(
-                post.getId(),
-                post.getContent(),
-                post.getUser().getName(),
-                post.getUser().getProfileImg(),
-                post.getUser().getId(),
-                post.getLikes().size(),
-                post.getComments().size());
+    public static PostDto of(Post post) {
+        return PostDto.builder()
+                .id(post.getId())
+                .content(post.getContent())
+                .name(post.getUser().getName())
+                .profileImg(post.getUser().getProfileImg())
+                .userId(post.getUser().getId())
+                .likeCount(post.getLikes().size())
+                .commentCount(post.getComments().size())
+                .createdDate(post.getCreatedDate())
+                .build();
     }
 }

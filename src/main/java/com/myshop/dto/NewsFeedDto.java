@@ -18,7 +18,7 @@ public class NewsFeedDto {
     public static NewsFeedDto getNewsfeedDto(List<Notification> notifications, List<Post> posts) {
         return new NewsFeedDto(
                 notifications.stream().map(NotificationDto::getNotification).sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed()).collect(Collectors.toList()),
-                posts.stream().map(PostDto::getPostDto).sorted(Comparator.comparing(PostDto::getId).reversed()).collect(Collectors.toList())
+                posts.stream().map(PostDto::of).sorted(Comparator.comparing(PostDto::getId).reversed()).collect(Collectors.toList())
         );
     }
 }

@@ -15,11 +15,11 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public void createPost(
+    public PostDetailDto createPost(
             @RequestBody CreatePostDto postDto
     ) {
         Long userId = AuthenticationUtils.getUserIdByToken();
-        postService.createPost(userId, postDto);
+        return postService.createPost(userId, postDto);
     }
 
     @GetMapping
