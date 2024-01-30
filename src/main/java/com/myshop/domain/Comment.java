@@ -20,7 +20,7 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @OneToOne(fetch= FetchType.EAGER, optional = false)
+    @OneToOne(fetch= FetchType.LAZY, optional = false)
     @JoinColumn(name = "writer_id")
     private User writer;
 

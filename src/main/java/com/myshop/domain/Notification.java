@@ -21,11 +21,11 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     private NotiType type;
 
-    @ManyToOne
+    @ManyToOne(fetch= FetchType.LAZY, optional = false)
     @JoinColumn(name = "from_user_id")
     private User fromUser;
 
-    @ManyToOne
+    @ManyToOne(fetch= FetchType.LAZY, optional = false)
     @JoinColumn(name = "to_user_id")
     private User toUser;
 
