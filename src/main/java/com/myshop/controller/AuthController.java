@@ -36,4 +36,9 @@ public class AuthController {
         authService.logout(AuthenticationUtils.getUserIdByToken());
     }
 
+    @GetMapping
+    public UserDto getAuth() {
+        return authService.getAuth(AuthenticationUtils.getUserIdByToken());
+    }
+
 }

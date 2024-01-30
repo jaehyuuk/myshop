@@ -54,4 +54,18 @@ public class AuthService {
             redisTemplate.delete(key); // Token 삭제
         }
     }
+
+    @Transactional(readOnly = true)
+    public UserDto getAuth(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .profileImg(user.getProfileImg())
+                .introduce(user.getIntroduce())
+                .build();
+    }
 }
