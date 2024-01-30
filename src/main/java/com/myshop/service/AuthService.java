@@ -38,7 +38,6 @@ public class AuthService {
 
         //로그인 성공시 jwt 토큰 생성
         String token = jwtTokenProvider.createToken(user.getEmail());
-        redisTemplate.opsForValue().set("JWT_TOKEN:" + user.getEmail(), token);
 
         return new TokenResponseDto(token);
     }

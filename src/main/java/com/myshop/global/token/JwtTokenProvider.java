@@ -9,6 +9,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Component
@@ -28,6 +31,8 @@ public class JwtTokenProvider {
     private final long tokenValidTime = 30 * 60 * 1000L; //토큰 유효시간 -> 30분
 
     private final UserDetailsServiceImpl userDetailsService;
+    private final RedisTemplate<String, String> redisTemplate;
+
 
     //객체 초기화, secretKey를 Base64로 인코딩
     @PostConstruct
@@ -40,12 +45,18 @@ public class JwtTokenProvider {
         //adminPk => loginId
         Claims claims = Jwts.claims().setSubject(userPk); //JWT payload 에 저장되는 정보단위
         Date now = new Date();
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .setClaims(claims) //정보 저장
                 .setIssuedAt(now) //토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) //토큰 유효시각 설정
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY) //암호화 알고리즘, secret 값 설정
                 .compact();
+        // Redis에 토큰 저장 및 만료 시간 설정
+        String redisKey = "JWT_TOKEN:" + userPk;
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.set(redisKey, token, tokenValidTime, TimeUnit.MILLISECONDS);
+
+        return token;
     }
 
 
