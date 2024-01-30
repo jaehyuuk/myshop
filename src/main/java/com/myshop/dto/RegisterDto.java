@@ -29,9 +29,11 @@ public class RegisterDto {
     }
 
     @Builder
-    public RegisterDto(String email, String password, String name) {
+    public RegisterDto(String email, String password, String name, String profileImg, String introduce) {
         this.email = email;
         this.password = password;
         this.name = name;
+        this.profileImg = profileImg;
+        this.introduce = introduce;
     }
 }

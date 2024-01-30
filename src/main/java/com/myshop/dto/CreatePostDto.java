@@ -2,9 +2,7 @@ package com.myshop.dto;
 
 import com.myshop.domain.Post;
 import com.myshop.domain.User;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 

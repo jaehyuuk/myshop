@@ -3,7 +3,6 @@ package com.myshop.service;
 import com.myshop.domain.*;
 import com.myshop.dto.FollowDto;
 import com.myshop.dto.NewsFeedDto;
-import com.myshop.dto.UserDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;
@@ -13,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -79,6 +77,4 @@ public class FollowService {
 
         return List.of(NewsFeedDto.getNewsfeedDto(notis, posts));
     }
-
-
 }

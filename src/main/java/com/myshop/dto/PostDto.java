@@ -1,7 +1,6 @@
 package com.myshop.dto;
 
 import com.myshop.domain.Post;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 

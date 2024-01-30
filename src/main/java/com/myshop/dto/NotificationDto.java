@@ -6,8 +6,6 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
-import static com.myshop.domain.NotiType.*;
-
 @Getter
 @AllArgsConstructor
 public class NotificationDto {
