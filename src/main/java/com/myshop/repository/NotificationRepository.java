@@ -14,6 +14,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     int mSave(Long fromUserId, Long toUserId, String type, Long postId, Long typeId);
 
     List<Notification> findByToUserId(Long userId);
+    List<Notification> findByFromUserIdIn(List<Long> userIds);
     boolean existsByToUserId(Long userId);
     Optional<Notification> deleteAllByPostId(Long postId);
     Optional<Notification> deleteAllByTypeId(Long typeId);

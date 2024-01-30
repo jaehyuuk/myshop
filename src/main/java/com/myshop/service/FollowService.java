@@ -65,23 +65,20 @@ public class FollowService {
         userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
+
+        // 현재 사용자가 팔로우하는 사용자들의 ID 목록
         List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
                 .map(follow -> follow.getFollowing().getId())
                 .collect(Collectors.toList());
-        List<Notification> notis = new ArrayList<>();
-        List<Post> posts = new ArrayList<>();
-        for (int i = 0; i < followingIds.size(); i++) {
-            if(notificationRepository.existsByToUserId(followingIds.get(i))){ // notification
-                List<Notification> notifications = notificationRepository.findByToUserId(followingIds.get(i));
-                for (Notification noti : notifications) { notis.add(noti);}
-            }
-            if(postRepository.existsByUserId(followingIds.get(i))){ // post
-                List<Post> postList = postRepository.findByUserId(followingIds.get(i));
-                for (Post post : postList) { posts.add(post);}
-            }
-        }
-        List<NewsFeedDto> newsFeedDtos = new ArrayList<>();
-        newsFeedDtos.add(NewsFeedDto.getNewsfeedDto(notis,posts));
-        return newsFeedDtos;
+
+        // 현재 사용자가 팔로우하는 사용자들의 활동 (알림) 가져오기
+        List<Notification> notis = notificationRepository.findByFromUserIdIn(followingIds);
+
+        // 현재 사용자가 팔로우하는 사용자들의 게시물 가져오기
+        List<Post> posts = postRepository.findByUserIdIn(followingIds);
+
+        return List.of(NewsFeedDto.getNewsfeedDto(notis, posts));
     }
+
+
 }

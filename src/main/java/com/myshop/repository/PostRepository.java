@@ -10,6 +10,5 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> deleteAllByUser(User user);
-    List<Post> findByUserId(Long userId);
-    boolean existsByUserId(Long userId);
+    List<Post> findByUserIdIn(List<Long> userIds);
 }
