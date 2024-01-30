@@ -42,23 +42,29 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        UserDto userDto = UserDto.builder()
+        return UserDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .profileImg(user.getProfileImg())
                 .introduce(user.getIntroduce())
                 .build();
-        return userDto;
     }
 
     @Transactional
-    public void updateUser(Long userId, UpdateUserDto userDto) {
+    public UserDto updateUser(Long userId, UpdateUserDto userDto) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         user.updateUser(userDto);
         userRepository.save(user);
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .profileImg(user.getProfileImg())
+                .introduce(user.getIntroduce())
+                .build();
     }
 
     @Transactional

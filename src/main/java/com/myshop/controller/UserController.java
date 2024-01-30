@@ -29,11 +29,11 @@ public class UserController {
     }
 
     @PostMapping("/update")
-    public void updateUser(
+    public UserDto updateUser(
             @RequestBody UpdateUserDto userDto
     ) {
         Long userId = AuthenticationUtils.getUserIdByToken();
-        userService.updateUser(userId, userDto);
+        return userService.updateUser(userId, userDto);
     }
 
     @PostMapping("/update/password")
