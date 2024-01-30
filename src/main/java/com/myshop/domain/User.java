@@ -83,6 +83,6 @@ public class User extends BaseTimeEntity {
         if (passwordEncoder.matches(newPassword, this.password)) {
             throw new BadRequestException("새로운 비밀번호는 이전 비밀번호와 달라야 합니다.");
         }
-        this.password = newPassword;
+        this.password = passwordEncoder.encode(newPassword);
     }
 }

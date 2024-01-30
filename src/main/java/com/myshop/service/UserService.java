@@ -52,7 +52,6 @@ public class UserService {
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
         user.updatePassword(passwordDto, bCryptPasswordEncoder);
-        user.hashPassword(bCryptPasswordEncoder);
         userRepository.save(user);
         String key = "JWT_TOKEN:" + user.getEmail();
         if (redisTemplate.opsForValue().get(key) != null) {
