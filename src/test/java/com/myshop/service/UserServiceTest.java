@@ -13,7 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
@@ -21,9 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -33,11 +35,14 @@ class UserServiceTest {
     private PostRepository postRepository;
     @Mock
     private PasswordEncoder bCryptPasswordEncoder;
+    @Mock
+    private RedisTemplate redisTemplate;
     @InjectMocks
     private UserService userService;
     @BeforeEach
     void init() {
-        userService = new UserService(userRepository, postRepository, bCryptPasswordEncoder);
+        MockitoAnnotations.initMocks(this);
+        userService = new UserService(userRepository, postRepository, bCryptPasswordEncoder, redisTemplate);
     }
 
     @Test
@@ -138,38 +143,94 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("유저 패스워드를 업데이트한다.")
-    void updatePassword() {
+    @DisplayName("비밀번호 갱신 테스트 - 사용자 찾지 못함")
+    void updatePassword_UserNotFound_Test() {
         // given
         Long userId = 1L;
-        User user = User.builder()
-                .password("oldPassword")
-                .build();
-        user.hashPassword(bCryptPasswordEncoder);
-        UpdatePasswordDto passwordDto = new UpdatePasswordDto();
-        passwordDto.setPassword("newPassword"); // Setter를 이용하여 비밀번호 설정
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+        UpdatePasswordDto updatePasswordDto = new UpdatePasswordDto();
+        updatePasswordDto.setPassword("newPassword");
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(bCryptPasswordEncoder.encode("newPassword")).willReturn("encodedNewPassword");
-        given(bCryptPasswordEncoder.matches("newPassword", "encodedNewPassword")).willReturn(true);
+        // when & then
+        assertThrows(BadRequestException.class, () -> {
+            userService.updatePassword(userId, updatePasswordDto);
+        });
+    }
+
+    @Test
+    @DisplayName("비밀번호 갱신 테스트 - 유효한 갱신")
+    void updatePassword_ValidUpdate_Test() {
+        // given
+        Long userId = 1L;
+        String oldPasswordEncoded = "oldPasswordEncoded";
+        String newPassword = "newPassword";
+        User mockUser = User.builder()
+                .id(userId)
+                .name("Test")
+                .email("test@example.com")
+                .password(oldPasswordEncoded) // 초기화된 암호화된 이전 비밀번호
+                .build();
+        UpdatePasswordDto updatePasswordDto = new UpdatePasswordDto();
+        updatePasswordDto.setPassword(newPassword);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        given(bCryptPasswordEncoder.encode(newPassword)).willReturn("encodedNewPassword");
+        given(bCryptPasswordEncoder.matches(newPassword, oldPasswordEncoded)).willReturn(false);
+        ValueOperations<String, String> valueOperations = mock(ValueOperations.class);
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get(anyString())).willReturn("token");
 
         // when
-        userService.updatePassword(userId, passwordDto);
+        userService.updatePassword(userId, updatePasswordDto);
 
         // then
-        verify(userRepository).save(any(User.class));
-        assertTrue(bCryptPasswordEncoder.matches("newPassword", user.getPassword()));
+        verify(redisTemplate).delete("JWT_TOKEN:test@example.com");
+        assertEquals("encodedNewPassword", mockUser.getPassword());
     }
+
+    @Test
+    @DisplayName("비밀번호 갱신 테스트 - 기존 비밀번호와 동일")
+    void updatePassword_SameAsOldPassword_Test() {
+        // given
+        Long userId = 1L;
+        String oldPasswordEncoded = "oldPasswordEncoded";
+        String oldPassword = "oldPassword";
+        User mockUser = User.builder()
+                .id(userId)
+                .name("Test")
+                .email("test@example.com")
+                .password(oldPasswordEncoded) // 초기화된 암호화된 이전 비밀번호
+                .build();
+        UpdatePasswordDto updatePasswordDto = new UpdatePasswordDto();
+        updatePasswordDto.setPassword(oldPassword);
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+        given(bCryptPasswordEncoder.matches(oldPassword, oldPasswordEncoded)).willReturn(true);
+
+        // when & then
+        assertThrows(BadRequestException.class, () -> {
+            userService.updatePassword(userId, updatePasswordDto);
+        });
+    }
+
 
     @Test
     @DisplayName("유저 정보를 삭제한다.")
     void deleteUser() {
         // given
         Long userId = 1L;
+        String email = "user@example.com";
         User user = User.builder()
                 .id(userId)
+                .email(email)
                 .build();
+
+        String key = "JWT_TOKEN:" + email;
+        ValueOperations<String, String> valueOperationsMock = mock(ValueOperations.class);
+
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        when(redisTemplate.opsForValue()).thenReturn(valueOperationsMock);
+        when(valueOperationsMock.get(key)).thenReturn("jwtToken");
 
         // when
         userService.deleteUser(userId);
@@ -177,8 +238,10 @@ class UserServiceTest {
         // then
         verify(postRepository).deleteAllByUser(user);
         verify(userRepository).delete(user);
+        verify(redisTemplate).opsForValue();
+        verify(valueOperationsMock).get(key);
+        verify(redisTemplate).delete(key);
     }
-
 
     @Test
     @DisplayName("유저 삭제 시 유저가 없는 경우 예외 발생 테스트")
