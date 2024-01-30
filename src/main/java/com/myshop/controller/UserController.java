@@ -44,7 +44,7 @@ public class UserController {
         userService.updatePassword(userId, passwordDto);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/delete")
     public void deleteUser() {
         Long userId = AuthenticationUtils.getUserIdByToken();
         userService.deleteUser(userId);

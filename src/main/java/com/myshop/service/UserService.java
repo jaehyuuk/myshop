@@ -6,6 +6,7 @@ import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
+    private final RedisTemplate redisTemplate;
 
     @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
@@ -75,6 +77,10 @@ public class UserService {
         user.updatePassword(passwordDto);
         user.hashPassword(bCryptPasswordEncoder);
         userRepository.save(user);
+        String key = "JWT_TOKEN:" + user.getEmail();
+        if (redisTemplate.opsForValue().get(key) != null) {
+            redisTemplate.delete(key); // Token 삭제
+        }
     }
 
     @Transactional
@@ -84,5 +90,9 @@ public class UserService {
         );
         postRepository.deleteAllByUser(user);
         userRepository.delete(user);
+        String key = "JWT_TOKEN:" + user.getEmail();
+        if (redisTemplate.opsForValue().get(key) != null) {
+            redisTemplate.delete(key); // Token 삭제
+        }
     }
 }
