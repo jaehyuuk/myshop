@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -57,6 +58,12 @@ public class User extends BaseTimeEntity {
         this.role = Role.USER;
     }
 
+    public void updateUser(UpdateUserDto userDto) {
+        if(userDto.getName() != null) this.name = userDto.getName();
+        if(userDto.getProfileImg() != null) this.profileImg = userDto.getProfileImg();
+        if(userDto.getIntroduce() != null) this.introduce = userDto.getIntroduce();
+    }
+
     public User hashPassword(PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(this.password);
         return this;
@@ -68,13 +75,14 @@ public class User extends BaseTimeEntity {
         }
     }
 
-    public void updateUser(UpdateUserDto userDto) {
-        if(userDto.getName() != null) this.name = userDto.getName();
-        if(userDto.getProfileImg() != null) this.profileImg = userDto.getProfileImg();
-        if(userDto.getIntroduce() != null) this.introduce = userDto.getIntroduce();
-    }
-
-    public void updatePassword(UpdatePasswordDto updatePasswordDto) {
-        if(updatePasswordDto.getPassword() != null) this.password = updatePasswordDto.getPassword();
+    public void updatePassword(UpdatePasswordDto updatePasswordDto, PasswordEncoder passwordEncoder) {
+        String newPassword = updatePasswordDto.getPassword();
+        if (!StringUtils.hasText(newPassword)) {
+            throw new BadRequestException("비밀번호를 입력해야 합니다.");
+        }
+        if (passwordEncoder.matches(newPassword, this.password)) {
+            throw new BadRequestException("새로운 비밀번호는 이전 비밀번호와 달라야 합니다.");
+        }
+        this.password = newPassword;
     }
 }

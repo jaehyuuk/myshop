@@ -74,7 +74,7 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        user.updatePassword(passwordDto);
+        user.updatePassword(passwordDto, bCryptPasswordEncoder);
         user.hashPassword(bCryptPasswordEncoder);
         userRepository.save(user);
         String key = "JWT_TOKEN:" + user.getEmail();
