@@ -24,10 +24,10 @@ public class PostService {
 
     @Transactional
     public PostDetailDto createPost(Long userId, CreatePostDto postDto) {
-        userRepository.findById(userId).orElseThrow(
+        User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        Post post = postRepository.save(postDto.toEntity(userId));
+        Post post = postRepository.save(postDto.toEntity(user));
         return getPostById(post.getId());
     }
 
