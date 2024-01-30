@@ -15,14 +15,16 @@ public class NotificationDto {
     public static NotificationDto getFollowNotification(Notification notification) {
         String fromUserName = notification.getFromUser().getName();
         String toUserName = notification.getToUser().getName();
-        String formattedMessage = notification.getType().formatMessage(fromUserName, toUserName, false);
+        Long postId = notification.getPostId();
+        String formattedMessage = notification.getType().formatMessage(fromUserName, toUserName, postId, false);
 
         return new NotificationDto(formattedMessage, notification.getCreatedAt());
     }
 
     public static NotificationDto getMyNotification(Notification notification) {
         String fromUserName = notification.getFromUser().getName();
-        String formattedMessage = notification.getType().formatMessage(fromUserName, "", true);
+        Long postId = notification.getPostId();
+        String formattedMessage = notification.getType().formatMessage(fromUserName, "", postId, true);
 
         return new NotificationDto(formattedMessage, notification.getCreatedAt());
     }

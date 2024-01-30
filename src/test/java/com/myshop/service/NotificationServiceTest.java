@@ -99,17 +99,18 @@ class NotificationServiceTest {
         User fromUser = User.builder().name("Alice").build();
         User toUser = User.builder().name("Bob").build();
 
-        Notification notification = new Notification();
-        notification.setFromUser(fromUser);
-        notification.setToUser(toUser);
-        notification.setType(NotiType.FOLLOW);
-        notification.setCreatedAt(LocalDateTime.now());
+        Notification notification = Notification.builder()
+                .fromUser(fromUser)
+                .toUser(toUser)
+                .type(NotiType.FOLLOW)
+                .createdAt(LocalDateTime.now())
+                .build();
 
         // when
-        NotificationDto notificationDto = NotificationDto.getNotification(notification);
+        NotificationDto notificationDto = NotificationDto.getFollowNotification(notification);
 
         // then
-        String expectedMessage = "Alice님이 Bob님을 팔로우 합니다.";
+        String expectedMessage = "Alice님이 Bob님을 팔로우합니다.";
         assertEquals(expectedMessage, notificationDto.getMessage());
         assertNotNull(notificationDto.getCreatedAt());
     }
@@ -120,17 +121,19 @@ class NotificationServiceTest {
         // given
         User fromUser = User.builder().name("Alice").build();
 
-        Notification notification = new Notification();
-        notification.setFromUser(fromUser);
-        notification.setType(NotiType.COMMENT);
-        notification.setTypeId(1L); // 예를 들어 포스트의 ID
-        notification.setCreatedAt(LocalDateTime.now());
+        Notification notification = Notification.builder()
+                .fromUser(fromUser)
+                .type(NotiType.COMMENT)
+                .typeId(1L)
+                .postId(1L)
+                .createdAt(LocalDateTime.now())
+                .build();
 
         // when
         NotificationDto notificationDto = NotificationDto.getMyNotification(notification);
 
         //then
-        String expectedMessage = "Alice님이 1 포스트에 댓글을 남겼습니다.";
+        String expectedMessage = "Alice님이 당신의 1 포스트에 댓글을 남겼습니다.";
         assertEquals(expectedMessage, notificationDto.getMessage());
         assertNotNull(notificationDto.getCreatedAt());
     }

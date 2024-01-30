@@ -39,11 +39,12 @@ public class Notification {
     private LocalDateTime createdAt;
 
     @Builder
-    public Notification(Long id, NotiType type, User fromUser, User toUser, Long typeId, LocalDateTime createdAt) {
+    public Notification(Long id, NotiType type, User fromUser, User toUser, Long postId, Long typeId, LocalDateTime createdAt) {
         this.id = id;
         this.type = type;
         this.fromUser = fromUser;
         this.toUser = toUser;
+        this.postId = postId;
         this.typeId = typeId;
         this.createdAt = createdAt;
     }
