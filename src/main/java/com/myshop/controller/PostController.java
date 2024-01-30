@@ -38,7 +38,8 @@ public class PostController {
     public void deletePost(
             @PathVariable("post_id") Long postId
     ){
-        postService.deletePost(postId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        postService.deletePost(userId, postId);
     }
 
     @PutMapping("/like/{post_id}")

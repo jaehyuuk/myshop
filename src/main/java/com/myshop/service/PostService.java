@@ -46,10 +46,13 @@ public class PostService {
     }
 
     @Transactional
-    public void deletePost(Long postId) {
-        postRepository.findById(postId).orElseThrow(
+    public void deletePost(Long userId, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(
                 () -> new BadRequestException("존재하지 않는 게시물입니다.")
         );
+        if (!userId.equals(post.getUser().getId())) {
+            throw new BadRequestException("본인의 게시물만 삭제가 가능합니다.");
+        }
         postRepository.deleteById(postId);
     }
 
