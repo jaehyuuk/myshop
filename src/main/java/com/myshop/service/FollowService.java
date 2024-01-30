@@ -3,6 +3,7 @@ package com.myshop.service;
 import com.myshop.domain.*;
 import com.myshop.dto.FollowDto;
 import com.myshop.dto.NewsFeedDto;
+import com.myshop.dto.UserDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;
@@ -56,7 +57,7 @@ public class FollowService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        return user.getFollowers().stream().map(FollowDto::new).collect(Collectors.toList());
+        return user.getFollowers().stream().map(FollowDto::of).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

@@ -11,8 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +25,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
         List<User> users = userRepository.findAll();
-        List<UserDto> userDtos = new ArrayList<>();
-        for (int i = 0; i < users.size(); i++) {
-            User user = users.get(i);
-            userDtos.add(UserDto.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .email(user.getEmail())
-                    .profileImg(user.getProfileImg())
-                    .introduce(user.getIntroduce())
-                    .build());
-        }
-        return userDtos;
+        return users.stream().map(UserDto::of).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -44,13 +33,7 @@ public class UserService {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .profileImg(user.getProfileImg())
-                .introduce(user.getIntroduce())
-                .build();
+        return UserDto.of(user);
     }
 
     @Transactional
@@ -60,13 +43,7 @@ public class UserService {
         );
         user.updateUser(userDto);
         userRepository.save(user);
-        return UserDto.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .profileImg(user.getProfileImg())
-                .introduce(user.getIntroduce())
-                .build();
+        return UserDto.of(user);
     }
 
     @Transactional

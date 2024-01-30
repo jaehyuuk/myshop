@@ -1,5 +1,6 @@
 package com.myshop.dto;
 
+import com.myshop.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,4 +20,15 @@ public class UserDto {
         this.profileImg = profileImg;
         this.introduce = introduce;
     }
+
+    public static UserDto of (User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .profileImg(user.getProfileImg())
+                .introduce(user.getIntroduce())
+                .build();
+    }
+
 }

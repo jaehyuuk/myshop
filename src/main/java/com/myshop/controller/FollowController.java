@@ -2,6 +2,7 @@ package com.myshop.controller;
 
 import com.myshop.dto.FollowDto;
 import com.myshop.dto.NewsFeedDto;
+import com.myshop.dto.UserDto;
 import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.FollowService;
 import lombok.RequiredArgsConstructor;
