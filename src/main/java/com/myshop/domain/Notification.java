@@ -29,6 +29,9 @@ public class Notification {
     @JoinColumn(name = "to_user_id")
     private User toUser;
 
+    @Column(name = "post_id")
+    private Long postId;
+
     @Column(name = "type_id")
     private Long typeId;
 

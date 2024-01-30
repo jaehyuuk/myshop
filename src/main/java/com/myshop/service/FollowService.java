@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,15 +36,18 @@ public class FollowService {
         User following = userRepository.findById(followingId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
         );
-        if (followRepository.findByFollowerAndFollowing(user, following).isPresent()) { // 이미 팔로운 경우 언팔
-            followRepository.findByFollowerAndFollowing(user, following)
-                    .ifPresent(followRepository::delete);
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(user, following);
+        if (existingFollow.isPresent()) {
+            // 이미 팔로우한 경우
+            Long followId = existingFollow.get().getId();
+            followRepository.delete(existingFollow.get());
+            notificationRepository.deleteAllByTypeId(followId);
         } else { // 아닌 경우 팔로우
             Follow follow = new Follow();
             follow.setFollower(user);
             follow.setFollowing(following);
             followRepository.save(follow);
-            notificationRepository.mSave(userId, followingId, NotiType.FOLLOW.name(), follow.getId());
+            notificationRepository.mSave(userId, followingId, NotiType.FOLLOW.name(), 0L, follow.getId());
         }
     }
 
