@@ -23,16 +23,6 @@ public class Follow extends BaseTimeEntity {
     @JoinColumn(name = "following_id")
     private User following;
 
-    public void setFollower(User follower) {
-        this.follower = follower;
-        follower.getFollowings().add(this);
-    }
-
-    public void setFollowing(User following) {
-        this.following = following;
-        following.getFollowers().add(this);
-    }
-
     @Builder
     public Follow(Long id, User follower, User following) {
         this.id = id;

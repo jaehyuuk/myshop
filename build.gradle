@@ -41,7 +41,7 @@ subprojects {
 		implementation 'org.springframework.boot:spring-boot-starter-validation'
 		implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
-		implementation 'io.jsonwebtoken:jjwt:0.9.1'
+
 	}
 
 	test {
@@ -49,17 +49,28 @@ subprojects {
 	}
 }
 
-project(':module-user') {
+project(':module-setting') {
+	dependencies {
+		implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	}
 	bootJar { enabled = false }
 	jar { enabled = true }
+}
+
+project(':module-user') {
+	dependencies {
+		implementation project(':module-setting')
+	}
 }
 
 project(':module-activity') {
-	bootJar { enabled = false }
-	jar { enabled = true }
+	dependencies {
+		implementation project(':module-setting')
+	}
 }
 
 project(':module-newsfeed') {
-	bootJar { enabled = false }
-	jar { enabled = true }
+	dependencies {
+		implementation project(':module-setting')
+	}
 }

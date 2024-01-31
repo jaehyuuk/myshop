@@ -1,5 +1,5 @@
 rootProject.name = 'myshop'
+include 'module-setting'
 include 'module-user'
 include 'module-activity'
 include 'module-newsfeed'
-

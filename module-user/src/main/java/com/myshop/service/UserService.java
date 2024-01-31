@@ -3,7 +3,7 @@ package com.myshop.service;
 import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.repository.PostRepository;
+//import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
+//    private final PostRepository postRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final RedisTemplate redisTemplate;
 
@@ -59,16 +59,16 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        postRepository.deleteAllByUser(user);
-        userRepository.delete(user);
-        String key = "JWT_TOKEN:" + user.getEmail();
-        if (redisTemplate.opsForValue().get(key) != null) {
-            redisTemplate.delete(key); // Token 삭제
-        }
-    }
+//    @Transactional
+//    public void deleteUser(Long userId) {
+//        User user = userRepository.findById(userId).orElseThrow(
+//                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+//        );
+//        postRepository.deleteAllByUser(user);
+//        userRepository.delete(user);
+//        String key = "JWT_TOKEN:" + user.getEmail();
+//        if (redisTemplate.opsForValue().get(key) != null) {
+//            redisTemplate.delete(key); // Token 삭제
+//        }
+//    }
 }

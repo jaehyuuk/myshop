@@ -5,7 +5,7 @@ import com.myshop.dto.LoginDto;
 import com.myshop.dto.RegisterDto;
 import com.myshop.dto.TokenResponseDto;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.global.token.JwtTokenProvider;
+import com.myshop.global.jwt.JwtTokenProvider;
 import com.myshop.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
