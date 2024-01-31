@@ -49,7 +49,7 @@ subprojects {
 	}
 }
 
-project(':module-setting') {
+project(':myshop-core') {
 	dependencies {
 		implementation 'io.jsonwebtoken:jjwt:0.9.1'
 	}
@@ -57,20 +57,20 @@ project(':module-setting') {
 	jar { enabled = true }
 }
 
-project(':module-user') {
+project(':myshop-user') {
 	dependencies {
-		implementation project(':module-setting')
+		implementation project(':myshop-core')
 	}
 }
 
-project(':module-activity') {
+project(':myshop-activity') {
 	dependencies {
-		implementation project(':module-setting')
+		implementation project(':myshop-core')
 	}
 }
 
-project(':module-newsfeed') {
+project(':myshop-newsfeed') {
 	dependencies {
-		implementation project(':module-setting')
+		implementation project(':myshop-core')
 	}
 }
