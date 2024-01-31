@@ -1,52 +1,65 @@
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '2.7.17'
-	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
-}
-
-group = 'com'
-version = '0.0.1-SNAPSHOT'
-
-java {
-	sourceCompatibility = '1.8'
-}
-
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
 }
 
 repositories {
 	mavenCentral()
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+bootJar.enabled = false
 
-	// jpa
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'com.mysql:mysql-connector-j'
+subprojects {
+	group = 'com.example'
+	version = '0.0.1-SNAPSHOT'
+	sourceCompatibility = '1.8'
 
-	// redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	apply plugin: 'java'
+	apply plugin: 'java-library'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
 
-	// spring security
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor
+		}
+	}
 
-	// jwt
-	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	repositories {
+		mavenCentral()
+	}
 
-	// valid
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// 관리하는 모듈의 공통 dependencies
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+		implementation 'com.mysql:mysql-connector-j'
+		implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
+		implementation 'org.springframework.boot:spring-boot-starter-security'
+		implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	}
 
-	// swagger
-	implementation 'org.springdoc:springdoc-openapi-ui:1.6.15'
+	test {
+		useJUnitPlatform()
+	}
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+project(':module-user') {
+	bootJar { enabled = false }
+	jar { enabled = true }
+}
+
+project(':module-activity') {
+	bootJar { enabled = false }
+	jar { enabled = true }
+}
+
+project(':module-newsfeed') {
+	bootJar { enabled = false }
+	jar { enabled = true }
 }

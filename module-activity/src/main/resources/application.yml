@@ -20,3 +20,6 @@ spring:
 jwt:
   secret: secrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtetsecrtet
   issuer: my_shop
+
+server:
+  port: 8081
