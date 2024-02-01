@@ -108,4 +108,12 @@ public class NewsFeedService {
                 .sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    public void deleteNewsfeedByUserId(Long userId) {
+        notificationRepository.deleteAllByToUserId(userId);
+        notificationRepository.deleteAllByFromUserId(userId);
+        followRepository.deleteAllByFollowerId(userId);
+        followRepository.deleteAllByFollowingId(userId);
+    }
 }

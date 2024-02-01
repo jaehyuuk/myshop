@@ -57,6 +57,13 @@ public class PostService {
     }
 
     @Transactional
+    public void deleteAllByUserId(Long userId) {
+        postRepository.deleteAllByUserId(userId);
+        commentRepository.deleteAllByWriterId(userId);
+        likeRepository.deleteAllByUserId(userId);
+    }
+
+    @Transactional
     public void likePost(Long userId, Long postId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")

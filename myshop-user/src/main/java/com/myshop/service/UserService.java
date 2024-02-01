@@ -3,13 +3,13 @@ package com.myshop.service;
 import com.myshop.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
-//import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-//    private final PostRepository postRepository;
     private final PasswordEncoder bCryptPasswordEncoder;
     private final RedisTemplate redisTemplate;
+    private final WebClient webClient;
 
     @Transactional(readOnly = true)
     public List<UserDto> getUsers() {
@@ -59,16 +59,28 @@ public class UserService {
         }
     }
 
-//    @Transactional
-//    public void deleteUser(Long userId) {
-//        User user = userRepository.findById(userId).orElseThrow(
-//                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-//        );
-//        postRepository.deleteAllByUser(user);
-//        userRepository.delete(user);
-//        String key = "JWT_TOKEN:" + user.getEmail();
-//        if (redisTemplate.opsForValue().get(key) != null) {
-//            redisTemplate.delete(key); // Token 삭제
-//        }
-//    }
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+        // Notification 게시물 삭제 API 호출
+        webClient.delete()
+                .uri("http://localhost:8081/api/internal/newsfeeds/user/" + userId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block(); // 여기서는 블로킹 호출을 사용
+        // Post 모듈의 게시물 삭제 API 호출
+        webClient.delete()
+                .uri("http://localhost:8082/api/internal/posts/user/" + userId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block(); // 여기서는 블로킹 호출을 사용
+
+        userRepository.delete(user);
+        String key = "JWT_TOKEN:" + user.getEmail();
+        if (redisTemplate.opsForValue().get(key) != null) {
+            redisTemplate.delete(key); // Token 삭제
+        }
+    }
 }
