@@ -50,19 +50,19 @@ public class PostController {
         postService.likePost(userId, postId);
     }
 
-    @PostMapping("/comment/{post-id}")
+    @PostMapping("/comment/{post_id}")
     public List<CommentDto> addComment(
-            @PathVariable(value = "post-id") Long postId,
+            @PathVariable(value = "post_id") Long postId,
             @RequestBody CreateCommentDto commentDto
     ) {
         Long userId = AuthenticationUtils.getUserIdByToken();
         return postService.addComment(userId, postId, commentDto);
     }
 
-    @DeleteMapping("/comment/{post-id}/{comment-id}")
+    @DeleteMapping("/comment/{post_id}/{comment_id}")
     public void removeComment(
-            @PathVariable(value = "post-id") Long postId,
-            @PathVariable(value = "comment-id") Long commentId
+            @PathVariable(value = "post_id") Long postId,
+            @PathVariable(value = "comment_id") Long commentId
     ) {
         Long userId = AuthenticationUtils.getUserIdByToken();
         postService.removeComment(userId, postId, commentId);
