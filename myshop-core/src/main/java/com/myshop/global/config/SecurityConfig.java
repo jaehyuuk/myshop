@@ -48,7 +48,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable() // CSRF 보호 비활성화
                 .authorizeRequests()
-                .antMatchers("/api/auth/join", "/api/auth/login", "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**")
+                .antMatchers("/api/auth/join",
+                        "/api/auth/login",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v3/api-docs/**",
+                        "/api/internal/**")
                 .permitAll() // 인증 필요 없는 URL 설정
                 .anyRequest().authenticated() // 그 외 요청은 인증 필요
                 .and()
