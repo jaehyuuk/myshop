@@ -54,7 +54,11 @@ public class PostService {
         if (!userId.equals(post.getUser().getId())) {
             throw new BadRequestException("본인의 게시물만 삭제가 가능합니다.");
         }
-//        notificationRepository.deleteAllByPostId(postId);
+        webClient.delete()
+                .uri("http://localhost:8081/api/internal/newsfeeds/notis/post/" + postId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block(); // 여기서는 블로킹 호출을 사용
         postRepository.deleteById(postId);
     }
 
@@ -78,7 +82,11 @@ public class PostService {
                     .collect(Collectors.toMap(Like::getUserId, Function.identity()));
             Like like = likes.get(userId);
             post.removeLike(like);
-//            notificationRepository.deleteAllByTypeId(like.getId());
+            webClient.delete()
+                    .uri("http://localhost:8081/api/internal/newsfeeds/notis/type/" + like.getId())
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block(); // 여기서는 블로킹 호출을 사용
         }
         else { // 좋아요
             Like like = Like.builder().userId(userId).build();
@@ -99,7 +107,6 @@ public class PostService {
                     .retrieve()
                     .toBodilessEntity()
                     .block();
-//          notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name(), postId, like.getId());
         }
     }
 
@@ -129,7 +136,6 @@ public class PostService {
                 .retrieve()
                 .toBodilessEntity()
                 .block();
-//        notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name(), postId, newComment.getId());
 
         return post.getComments().stream()
                 .map(CommentDto::of)
@@ -152,7 +158,11 @@ public class PostService {
             throw new BadRequestException("댓글 삭제는 댓글을 단 게시물에만 가능합니다.");
         }
         post.removeComment(comments.get(commentId), userId);
-//        notificationRepository.deleteAllByTypeId(commentId);
+        webClient.delete()
+                .uri("http://localhost:8081/api/internal/newsfeeds/notis/type/" + commentId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block(); // 여기서는 블로킹 호출을 사용
     }
 
     // Rest Api

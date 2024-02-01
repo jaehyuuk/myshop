@@ -24,4 +24,16 @@ public class NewsFeedRestApiController {
         newsFeedService.createNotification(request);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/notis/type/{typeId}")
+    public ResponseEntity<?> deleteNotificationByTypeId(@PathVariable Long typeId) {
+        newsFeedService.deleteNotificationByTypeId(typeId);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/notis/post/{postId}")
+    public ResponseEntity<?> deleteNotificationByPostId(@PathVariable Long postId) {
+        newsFeedService.deleteNotificationByPostId(postId);
+        return ResponseEntity.ok().build();
+    }
 }

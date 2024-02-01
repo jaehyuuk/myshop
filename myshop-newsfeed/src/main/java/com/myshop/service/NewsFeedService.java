@@ -123,4 +123,14 @@ public class NewsFeedService {
         notificationRepository.mSave(request.getFromUserId(), request.getToUserId(),
                 request.getType(), request.getPostId(), request.getTypeId());
     }
+
+    @Transactional
+    public void deleteNotificationByTypeId(Long typeId) {
+        notificationRepository.deleteAllByTypeId(typeId);
+    }
+
+    @Transactional
+    public void deleteNotificationByPostId(Long postId) {
+        notificationRepository.deleteAllByPostId(postId);
+    }
 }
