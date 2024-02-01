@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/internal/newsfeeds")
+@RequestMapping("/api/internal/feeds")
 @RequiredArgsConstructor
 public class NewsFeedRestApiController {
     private final NewsFeedService newsFeedService;

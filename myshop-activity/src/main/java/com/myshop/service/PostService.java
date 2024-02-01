@@ -55,7 +55,7 @@ public class PostService {
             throw new BadRequestException("본인의 게시물만 삭제가 가능합니다.");
         }
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/newsfeeds/notis/post/" + postId)
+                .uri("http://localhost:8081/api/internal/feeds/notis/post/" + postId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block(); // 여기서는 블로킹 호출을 사용
@@ -83,7 +83,7 @@ public class PostService {
             Like like = likes.get(userId);
             post.removeLike(like);
             webClient.delete()
-                    .uri("http://localhost:8081/api/internal/newsfeeds/notis/type/" + like.getId())
+                    .uri("http://localhost:8081/api/internal/feeds/notis/type/" + like.getId())
                     .retrieve()
                     .bodyToMono(Void.class)
                     .block(); // 여기서는 블로킹 호출을 사용
@@ -102,7 +102,7 @@ public class PostService {
             request.setTypeId(like.getId());
 
             webClient.post()
-                    .uri("http://localhost:8081/api/internal/newsfeeds/notis")
+                    .uri("http://localhost:8081/api/internal/feeds/notis")
                     .bodyValue(request)
                     .retrieve()
                     .toBodilessEntity()
@@ -131,7 +131,7 @@ public class PostService {
         request.setTypeId(newComment.getId());
 
         webClient.post()
-                .uri("http://localhost:8081/api/internal/newsfeeds/notis")
+                .uri("http://localhost:8081/api/internal/feeds/notis")
                 .bodyValue(request)
                 .retrieve()
                 .toBodilessEntity()
@@ -159,7 +159,7 @@ public class PostService {
         }
         post.removeComment(comments.get(commentId), userId);
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/newsfeeds/notis/type/" + commentId)
+                .uri("http://localhost:8081/api/internal/feeds/notis/type/" + commentId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block(); // 여기서는 블로킹 호출을 사용
