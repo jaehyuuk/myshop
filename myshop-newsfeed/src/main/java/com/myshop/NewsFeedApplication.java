@@ -11,10 +11,10 @@ import java.util.TimeZone;
 @EnableScheduling
 @EnableJpaAuditing
 @SpringBootApplication
-public class MyshopApplication {
+public class NewsFeedApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MyshopApplication.class, args);
+		SpringApplication.run(NewsFeedApplication.class, args);
 	}
 
 	@PostConstruct
