@@ -109,11 +109,18 @@ public class NewsFeedService {
                 .collect(Collectors.toList());
     }
 
+    // RestApi
     @Transactional
     public void deleteNewsfeedByUserId(Long userId) {
         notificationRepository.deleteAllByToUserId(userId);
         notificationRepository.deleteAllByFromUserId(userId);
         followRepository.deleteAllByFollowerId(userId);
         followRepository.deleteAllByFollowingId(userId);
+    }
+
+    @Transactional
+    public void createNotification(NotificationCreateRequest request) {
+        notificationRepository.mSave(request.getFromUserId(), request.getToUserId(),
+                request.getType(), request.getPostId(), request.getTypeId());
     }
 }

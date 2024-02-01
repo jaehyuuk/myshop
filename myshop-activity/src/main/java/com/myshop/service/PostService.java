@@ -7,6 +7,7 @@ import com.myshop.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ public class PostService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private final WebClient webClient;
 
     @Transactional
     public PostDetailDto createPost(Long userId, CreatePostDto postDto) {
@@ -57,13 +59,6 @@ public class PostService {
     }
 
     @Transactional
-    public void deleteAllByUserId(Long userId) {
-        postRepository.deleteAllByUserId(userId);
-        commentRepository.deleteAllByWriterId(userId);
-        likeRepository.deleteAllByUserId(userId);
-    }
-
-    @Transactional
     public void likePost(Long userId, Long postId) {
         userRepository.findById(userId).orElseThrow(
                 () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
@@ -89,7 +84,22 @@ public class PostService {
             Like like = Like.builder().userId(userId).build();
             post.addLike(like);
             likeRepository.save(like);
-//            notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name(), postId, like.getId());
+
+            // 알림 저장 restApi
+            NotificationCreateRequest request = new NotificationCreateRequest();
+            request.setFromUserId(userId);
+            request.setToUserId(post.getUser().getId());
+            request.setType("LIKE");
+            request.setPostId(postId);
+            request.setTypeId(like.getId());
+
+            webClient.post()
+                    .uri("http://localhost:8081/api/internal/newsfeeds/notis")
+                    .bodyValue(request)
+                    .retrieve()
+                    .toBodilessEntity()
+                    .block();
+//          notificationRepository.mSave(userId, post.getUser().getId(), NotiType.LIKE.name(), postId, like.getId());
         }
     }
 
@@ -104,6 +114,21 @@ public class PostService {
         Comment newComment = commentDto.toEntity(user);
         post.addComment(newComment);
         commentRepository.save(newComment);
+
+        // 알림 저장 restApi
+        NotificationCreateRequest request = new NotificationCreateRequest();
+        request.setFromUserId(userId);
+        request.setToUserId(post.getUser().getId());
+        request.setType("COMMENT");
+        request.setPostId(postId);
+        request.setTypeId(newComment.getId());
+
+        webClient.post()
+                .uri("http://localhost:8081/api/internal/newsfeeds/notis")
+                .bodyValue(request)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
 //        notificationRepository.mSave(userId, post.getUser().getId(), NotiType.COMMENT.name(), postId, newComment.getId());
 
         return post.getComments().stream()
@@ -129,4 +154,14 @@ public class PostService {
         post.removeComment(comments.get(commentId), userId);
 //        notificationRepository.deleteAllByTypeId(commentId);
     }
+
+    // Rest Api
+    @Transactional
+    public void deleteAllByUserId(Long userId) {
+        postRepository.deleteAllByUserId(userId);
+        commentRepository.deleteAllByWriterId(userId);
+        likeRepository.deleteAllByUserId(userId);
+    }
+
+
 }

@@ -25,7 +25,7 @@ public class WebClientConfig {
         ClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
 
         return WebClient.builder()
-                .baseUrl("http://localhost:") // 기본 URL 설정
+//                .baseUrl("http://localhost:8081") // 기본 URL 설정
                 .clientConnector(connector)
                 .build();
     }
