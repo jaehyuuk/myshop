@@ -4,8 +4,6 @@ import com.myshop.domain.Post;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 public class PostDto {
     private Long id;
@@ -15,10 +13,10 @@ public class PostDto {
     private Long userId;
     private Integer likeCount;
     private Integer commentCount;
-    private LocalDateTime createdDate;
+    private String createdAt;
 
     @Builder
-    public PostDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, LocalDateTime createdDate) {
+    public PostDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, String createdAt) {
         this.id = id;
         this.content = content;
         this.name = name;
@@ -26,7 +24,7 @@ public class PostDto {
         this.userId = userId;
         this.likeCount = likeCount;
         this.commentCount = commentCount;
-        this.createdDate = createdDate;
+        this.createdAt = createdAt;
     }
 
     public static PostDto of(Post post) {
@@ -38,7 +36,7 @@ public class PostDto {
                 .userId(post.getUser().getId())
                 .likeCount(post.getLikes().size())
                 .commentCount(post.getComments().size())
-                .createdDate(post.getCreatedDate())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 

@@ -1,12 +1,9 @@
 package com.myshop.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -19,10 +16,10 @@ public class PostResponseDto {
     private Long userId;
     private Integer likeCount;
     private Integer commentCount;
-    private LocalDateTime createdDate;
+    private String createdAt;
 
     @Builder
-    public PostResponseDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, LocalDateTime createdDate) {
+    public PostResponseDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, String createdAt) {
         this.id = id;
         this.content = content;
         this.name = name;
@@ -30,7 +27,7 @@ public class PostResponseDto {
         this.userId = userId;
         this.likeCount = likeCount;
         this.commentCount = commentCount;
-        this.createdDate = createdDate;
+        this.createdAt = createdAt;
     }
 
     @Override
@@ -43,7 +40,7 @@ public class PostResponseDto {
                 ", userId=" + userId +
                 ", likeCount=" + likeCount +
                 ", commentCount=" + commentCount +
-                ", createdDate=" + createdDate +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }

@@ -13,16 +13,16 @@ public class CommentDto {
     private String name;
     private String profileImg;
     private Long userId;
-    private LocalDateTime createdDate;
+    private String createdAt;
 
     @Builder
-    public CommentDto(Long id, String content, String name, String profileImg, Long userId, LocalDateTime createdDate) {
+    public CommentDto(Long id, String content, String name, String profileImg, Long userId, String createdAt) {
         this.id = id;
         this.content = content;
         this.name = name;
         this.profileImg = profileImg;
         this.userId = userId;
-        this.createdDate = createdDate;
+        this.createdAt = createdAt;
     }
 
     public static CommentDto of(Comment comment) {
@@ -32,7 +32,7 @@ public class CommentDto {
                 .name(comment.getWriter().getName())
                 .profileImg(comment.getWriter().getProfileImg())
                 .userId(comment.getWriter().getId())
-                .createdDate(comment.getCreatedDate())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }

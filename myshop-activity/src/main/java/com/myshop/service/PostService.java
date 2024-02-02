@@ -216,7 +216,7 @@ public class PostService {
                 .userId(postDto.getUserId())
                 .likeCount(postDto.getLikeCount())
                 .commentCount(postDto.getCommentCount())
-                .createdDate(postDto.getCreatedDate())
+                .createdAt(postDto.getCreatedAt())
                 .build();
     }
 

@@ -16,17 +16,17 @@ public class PostDetailDto {
     private String profileImg;
     private Long userId;
     private List<CommentDto> comments;
-    private LocalDateTime createdDate;
+    private String createdAt;
 
     @Builder
-    public PostDetailDto(Long id, String content, String name, String profileImg, Long userId, List<CommentDto> comments, LocalDateTime createdDate) {
+    public PostDetailDto(Long id, String content, String name, String profileImg, Long userId, List<CommentDto> comments, String createdAt) {
         this.id = id;
         this.content = content;
         this.name = name;
         this.profileImg = profileImg;
         this.userId = userId;
         this.comments = comments;
-        this.createdDate = createdDate;
+        this.createdAt = createdAt;
     }
 
     public static PostDetailDto of(Post post) {
@@ -37,7 +37,7 @@ public class PostDetailDto {
                 .profileImg(post.getUser().getProfileImg())
                 .userId(post.getUser().getId())
                 .comments(post.getComments().stream().map(CommentDto::of).collect(Collectors.toList()))
-                .createdDate(post.getCreatedDate())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }
