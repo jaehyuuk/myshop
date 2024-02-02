@@ -4,13 +4,11 @@ import com.myshop.domain.Notification;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @AllArgsConstructor
 public class NotificationDto {
     private String message;
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     public static NotificationDto getFollowNotification(Notification notification) {
         String fromUserName = notification.getFromUser().getName();

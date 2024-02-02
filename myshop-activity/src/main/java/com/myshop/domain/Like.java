@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "likes")
 @NoArgsConstructor
-public class Like {
+public class Like extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)

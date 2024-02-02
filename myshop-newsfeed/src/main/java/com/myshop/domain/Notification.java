@@ -6,14 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "notifications")
 @NoArgsConstructor
-public class Notification {
+public class Notification extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -35,17 +34,13 @@ public class Notification {
     @Column(name = "type_id")
     private Long typeId;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
     @Builder
-    public Notification(Long id, NotiType type, User fromUser, User toUser, Long postId, Long typeId, LocalDateTime createdAt) {
+    public Notification(Long id, NotiType type, User fromUser, User toUser, Long postId, Long typeId) {
         this.id = id;
         this.type = type;
         this.fromUser = fromUser;
         this.toUser = toUser;
         this.postId = postId;
         this.typeId = typeId;
-        this.createdAt = createdAt;
     }
 }
