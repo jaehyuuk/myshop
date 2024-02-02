@@ -58,7 +58,7 @@ public class PostService {
                 .uri("http://localhost:8081/api/internal/feeds/notis/post/" + postId)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .block(); // 여기서는 블로킹 호출을 사용
+                .block();
         postRepository.deleteById(postId);
     }
 
@@ -86,7 +86,7 @@ public class PostService {
                     .uri("http://localhost:8081/api/internal/feeds/notis/type/" + like.getId())
                     .retrieve()
                     .bodyToMono(Void.class)
-                    .block(); // 여기서는 블로킹 호출을 사용
+                    .block();
         }
         else { // 좋아요
             Like like = Like.builder().userId(userId).build();
@@ -162,7 +162,7 @@ public class PostService {
                 .uri("http://localhost:8081/api/internal/feeds/notis/type/" + commentId)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .block(); // 여기서는 블로킹 호출을 사용
+                .block();
     }
 
     // Rest Api
@@ -171,6 +171,53 @@ public class PostService {
         postRepository.deleteAllByUserId(userId);
         commentRepository.deleteAllByWriterId(userId);
         likeRepository.deleteAllByUserId(userId);
+    }
+
+    // 사용자 ID 목록을 기반으로 PostResponseDto 목록을 조회하고 반환
+//    public List<PostResponseDto> getPostsByUserIds(List<Long> userIds) {
+//        List<Post> posts = postRepository.findByUserIdIn(userIds);
+//        return posts.stream()
+//                .map(PostDto::of)
+//                .map(this::convertToPostResponseDto)
+//                .collect(Collectors.toList());
+//    }
+
+    public List<PostResponseDto> getPostsByUserIds(List<Long> userIds) {
+        // 사용자 ID 목록 출력
+        System.out.println("Fetching posts for userIds: " + userIds);
+
+        List<Post> posts = postRepository.findByUserIdIn(userIds);
+
+        // 조회된 Post 목록 출력
+        System.out.println("Retrieved posts size: " + posts.size());
+
+        List<PostResponseDto> postResponseDtos = posts.stream()
+                .map(PostDto::of)
+                .map(postDto -> {
+                    // PostDto를 PostResponseDto로 변환 전 출력
+                    System.out.println("Converting PostDto to PostResponseDto:" + postDto.toString());
+                    return convertToPostResponseDto(postDto);
+                })
+                .collect(Collectors.toList());
+
+        // 최종 변환된 PostResponseDto 목록 출력
+        System.out.println("Converted PostResponseDtos: " + postResponseDtos.toString());
+
+        return postResponseDtos;
+    }
+
+    // PostDto를 PostResponseDto로 변환하는 메서드
+    private PostResponseDto convertToPostResponseDto(PostDto postDto) {
+        return PostResponseDto.builder()
+                .id(postDto.getId())
+                .content(postDto.getContent())
+                .name(postDto.getName())
+                .profileImg(postDto.getProfileImg())
+                .userId(postDto.getUserId())
+                .likeCount(postDto.getLikeCount())
+                .commentCount(postDto.getCommentCount())
+                .createdDate(postDto.getCreatedDate())
+                .build();
     }
 
 

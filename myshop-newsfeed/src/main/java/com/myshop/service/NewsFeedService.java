@@ -1,31 +1,30 @@
 package com.myshop.service;
 
 import com.myshop.domain.*;
-import com.myshop.dto.FollowDto;
-import com.myshop.dto.NewsFeedDto;
-import com.myshop.dto.NotificationDto;
+import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;
-//import com.myshop.repository.PostRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NewsFeedService {
     private final UserRepository userRepository;
-//    private final PostRepository postRepository;
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
+    private final WebClient webClient;
 
     @Transactional
     public void follow(Long userId, Long followingId) {
@@ -81,12 +80,47 @@ public class NewsFeedService {
                 .collect(Collectors.toList());
 
         // 현재 사용자가 팔로우하는 사용자들의 활동 (알림) 가져오기
-        List<Notification> notis = notificationRepository.findByFromUserIdIn(followingIds);
+        List<Notification> notifications = notificationRepository.findByFromUserIdIn(followingIds);
+        List<NotificationDto> notificationDtos = notifications.stream()
+                .map(NotificationDto::getFollowNotification)
+                .sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
 
         // 현재 사용자가 팔로우하는 사용자들의 게시물 가져오기
-//        List<Post> posts = postRepository.findByUserIdIn(followingIds);
+//        List<PostResponseDto> postDtos = webClient.get()
+//                .uri(uriBuilder -> uriBuilder
+//                        .scheme("http")
+//                        .host("localhost")
+//                        .port(8082)
+//                        .path("/api/internal/posts/users")
+//                        .queryParam("userIds", followingIds)
+//                        .build())
+//                .retrieve()
+//                .bodyToFlux(PostResponseDto.class)
+//                .collectList()
+//                .block();
 
-        return List.of(NewsFeedDto.getNewsfeedDto(notis ));
+        log.info("Preparing to send GET request with userIds: {}", followingIds);
+        List<PostResponseDto> postDtos = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("http")
+                        .host("localhost")
+                        .port(8082)
+                        .path("/api/internal/posts/users")
+                        .queryParam("userIds", followingIds)
+                        .build())
+                .retrieve()
+                .bodyToFlux(PostResponseDto.class)
+                .doOnSubscribe(subscription -> log.info("Request subscribed"))
+                .doOnNext(post -> log.info("Received post DTO: {}", post))
+                .doOnComplete(() -> log.info("Request completed successfully"))
+                .doOnError(error -> log.error("Error occurred during request: ", error))
+                .collectList()
+                .doOnSubscribe(subscription -> log.info("Collecting PostResponseDto list"))
+                .block();
+        log.info("Successfully retrieved PostResponseDtos: {}", postDtos);
+
+        return List.of(new NewsFeedDto(notificationDtos, postDtos));
     }
 
     @Transactional(readOnly = true)

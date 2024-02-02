@@ -1,13 +1,17 @@
 package com.myshop.dto;
 
-import com.myshop.domain.Post;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
-public class PostDto {
+@Setter
+@NoArgsConstructor
+public class PostResponseDto {
     private Long id;
     private String content;
     private String name;
@@ -18,7 +22,7 @@ public class PostDto {
     private LocalDateTime createdDate;
 
     @Builder
-    public PostDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, LocalDateTime createdDate) {
+    public PostResponseDto(Long id, String content, String name, String profileImg, Long userId, Integer likeCount, Integer commentCount, LocalDateTime createdDate) {
         this.id = id;
         this.content = content;
         this.name = name;
@@ -29,22 +33,9 @@ public class PostDto {
         this.createdDate = createdDate;
     }
 
-    public static PostDto of(Post post) {
-        return PostDto.builder()
-                .id(post.getId())
-                .content(post.getContent())
-                .name(post.getUser().getName())
-                .profileImg(post.getUser().getProfileImg())
-                .userId(post.getUser().getId())
-                .likeCount(post.getLikes().size())
-                .commentCount(post.getComments().size())
-                .createdDate(post.getCreatedDate())
-                .build();
-    }
-
     @Override
     public String toString() {
-        return "PostDto{" +
+        return "PostResponseDto{" +
                 "id=" + id +
                 ", content='" + content + '\'' +
                 ", name='" + name + '\'' +
@@ -52,6 +43,7 @@ public class PostDto {
                 ", userId=" + userId +
                 ", likeCount=" + likeCount +
                 ", commentCount=" + commentCount +
+                ", createdDate=" + createdDate +
                 '}';
     }
 }

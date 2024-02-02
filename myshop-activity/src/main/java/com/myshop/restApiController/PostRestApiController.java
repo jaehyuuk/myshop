@@ -1,12 +1,11 @@
 package com.myshop.restApiController;
 
+import com.myshop.dto.PostResponseDto;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/internal/posts")
@@ -15,9 +14,13 @@ public class PostRestApiController {
     private final PostService postService;
 
     @DeleteMapping("/user/{userId}")
-    public ResponseEntity<?> deletePostsByUserId(@PathVariable Long userId) {
-        // 사용자 ID를 기반으로 게시물 삭제
+    public void deletePostsByUserId(@PathVariable Long userId) {
         postService.deleteAllByUserId(userId);
-        return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/users")
+    public List<PostResponseDto> getPostsByUserIds(@RequestParam List<Long> userIds) {
+        return postService.getPostsByUserIds(userIds);
+    }
+
 }
