@@ -1,5 +1,6 @@
 package com.myshop.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myshop.domain.*;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
@@ -8,10 +9,15 @@ import com.myshop.repository.NotificationRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,39 +91,15 @@ public class NewsFeedService {
                 .collect(Collectors.toList());
 
         // 현재 사용자가 팔로우하는 사용자들의 게시물 가져오기
-//        List<PostResponseDto> postDtos = webClient.get()
-//                .uri(uriBuilder -> uriBuilder
-//                        .scheme("http")
-//                        .host("localhost")
-//                        .port(8082)
-//                        .path("/api/internal/posts/users")
-//                        .queryParam("userIds", followingIds)
-//                        .build())
-//                .retrieve()
-//                .bodyToFlux(PostResponseDto.class)
-//                .collectList()
-//                .block();
-
-        log.info("Preparing to send GET request with userIds: {}", followingIds);
-        List<PostResponseDto> postDtos = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .scheme("http")
-                        .host("localhost")
-                        .port(8082)
-                        .path("/api/internal/posts/users")
-                        .queryParam("userIds", followingIds)
-                        .build())
+        Mono<List<PostResponseDto>> response = webClient.post()
+                .uri("http://localhost:8082/api/internal/posts/follows")
+                .bodyValue(followingIds)
                 .retrieve()
                 .bodyToFlux(PostResponseDto.class)
-                .doOnSubscribe(subscription -> log.info("Request subscribed"))
-                .doOnNext(post -> log.info("Received post DTO: {}", post))
-                .doOnComplete(() -> log.info("Request completed successfully"))
-                .doOnError(error -> log.error("Error occurred during request: ", error))
-                .collectList()
-                .doOnSubscribe(subscription -> log.info("Collecting PostResponseDto list"))
-                .block();
-        log.info("Successfully retrieved PostResponseDtos: {}", postDtos);
+                .collectList();
 
+        List<PostResponseDto> postDtos = response.block();
+        System.out.println(postDtos.toString());
         return List.of(new NewsFeedDto(notificationDtos, postDtos));
     }
 

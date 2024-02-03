@@ -1,9 +1,10 @@
 package com.myshop.restApiController;
 
-import com.myshop.dto.PostResponseDto;
+import com.myshop.dto.PostDto;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -18,9 +19,8 @@ public class PostRestApiController {
         postService.deleteAllByUserId(userId);
     }
 
-    @GetMapping("/users")
-    public List<PostResponseDto> getPostsByUserIds(@RequestParam List<Long> userIds) {
-        return postService.getPostsByUserIds(userIds);
+    @PostMapping("/follows")
+    public Flux<PostDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
+        return postService.getPostsByUserIds(followingIds);
     }
-
 }
