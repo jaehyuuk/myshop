@@ -95,7 +95,7 @@ public class PostService {
             likeRepository.save(like);
 
             // 알림 저장 restApi
-            NotificationCreateRequest request = new NotificationCreateRequest();
+            CreateNotificationDto request = new CreateNotificationDto();
             request.setFromUserId(userId);
             request.setToUserId(post.getUser().getId());
             request.setType("LIKE");
@@ -124,7 +124,7 @@ public class PostService {
         commentRepository.save(newComment);
 
         // 알림 저장 restApi
-        NotificationCreateRequest request = new NotificationCreateRequest();
+        CreateNotificationDto request = new CreateNotificationDto();
         request.setFromUserId(userId);
         request.setToUserId(post.getUser().getId());
         request.setType("COMMENT");

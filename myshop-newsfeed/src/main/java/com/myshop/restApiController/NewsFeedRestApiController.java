@@ -1,6 +1,6 @@
 package com.myshop.restApiController;
 
-import com.myshop.dto.NotificationCreateRequest;
+import com.myshop.dto.CreateNotificationDto;
 import com.myshop.service.NewsFeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class NewsFeedRestApiController {
     }
 
     @PostMapping("/notis")
-    public ResponseEntity<?> createNotification(@RequestBody NotificationCreateRequest request) {
+    public ResponseEntity<?> createNotification(@RequestBody CreateNotificationDto request) {
         newsFeedService.createNotification(request);
         return ResponseEntity.ok().build();
     }
