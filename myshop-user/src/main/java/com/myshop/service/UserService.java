@@ -30,17 +30,13 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserDto getUserById(final Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
+        User user = findUserById(userId);
         return UserDto.of(user);
     }
 
     @Transactional
     public UserDto updateUser(Long userId, UpdateUserDto userDto) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
+        User user = findUserById(userId);
         user.updateUser(userDto);
         userRepository.save(user);
         return UserDto.of(user);
@@ -48,39 +44,48 @@ public class UserService {
 
     @Transactional
     public void updatePassword(Long userId, UpdatePasswordDto passwordDto) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
+        User user = findUserById(userId);
         user.updatePassword(passwordDto, bCryptPasswordEncoder);
         userRepository.save(user);
+        deleteToken(user);
+    }
+
+    @Transactional
+    public void deleteUser(Long userId) {
+        User user = findUserById(userId);
+        deleteNotification(userId);
+        deletePost(userId);
+        userRepository.delete(user);
+        deleteToken(user);
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+    }
+
+    private void deleteToken(User user) {
         String key = "JWT_TOKEN:" + user.getEmail();
         if (redisTemplate.opsForValue().get(key) != null) {
             redisTemplate.delete(key); // Token 삭제
         }
     }
 
-    @Transactional
-    public void deleteUser(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        // Notification 게시물 삭제 API 호출
+    // Rest Api
+    private void deleteNotification(Long userId) {
         webClient.delete()
                 .uri("http://localhost:8081/api/internal/newsfeeds/user/" + userId)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .block(); // 여기서는 블로킹 호출을 사용
-        // Post 모듈의 게시물 삭제 API 호출
+                .block();
+    }
+
+    private void deletePost(Long userId) {
         webClient.delete()
                 .uri("http://localhost:8082/api/internal/posts/user/" + userId)
                 .retrieve()
                 .bodyToMono(Void.class)
-                .block(); // 여기서는 블로킹 호출을 사용
-
-        userRepository.delete(user);
-        String key = "JWT_TOKEN:" + user.getEmail();
-        if (redisTemplate.opsForValue().get(key) != null) {
-            redisTemplate.delete(key); // Token 삭제
-        }
+                .block();
     }
 }
