@@ -1,6 +1,5 @@
 package com.myshop.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myshop.domain.*;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
@@ -9,15 +8,11 @@ import com.myshop.repository.NotificationRepository;
 import com.myshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,98 +27,101 @@ public class NewsFeedService {
 
     @Transactional
     public void follow(Long userId, Long followingId) {
-        if (userId.equals(followingId)) {
-            throw new BadRequestException("사용자는 자신을 팔로우할 수 없습니다.");
-        }
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        User following = userRepository.findById(followingId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowing(user, following);
-        if (existingFollow.isPresent()) {
-            // 이미 팔로우한 경우
-            Long followId = existingFollow.get().getId();
-            followRepository.delete(existingFollow.get());
-            notificationRepository.deleteAllByTypeId(followId);
-        } else { // 아닌 경우 팔로우
-            Follow follow = Follow.builder()
-                    .follower(user)  // 팔로워 설정
-                    .following(following)  // 팔로잉 대상 설정
-                    .build();
-            followRepository.save(follow);
-            notificationRepository.mSave(userId, followingId, NotiType.FOLLOW.name(), 0L, follow.getId());
-        }
+        validateSelfFollow(userId, followingId);
+        User user = findUserById(userId);
+        User following = findUserById(followingId);
+
+        followRepository.findByFollowerAndFollowing(user, following)
+                .ifPresentOrElse(
+                        this::unfollowExistingFollow, // 이미 팔로우 했다면 삭제
+                        () -> createAndSaveNewFollow(user, following) // 아니라면 팔로우
+                );
     }
 
     @Transactional(readOnly = true)
     public List<FollowDto> getFollows(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BadRequestException("유저 정보를 찾을 수 없습니다.");
-        }
-
-        // 해당 사용자를 팔로우하는 모든 Follow 엔티티 가져오기
-        List<Follow> followingUsers = followRepository.findByFollowerId(userId);
-
-        // Follow 엔티티 리스트를 FollowDto 리스트로 변환
-        return followingUsers.stream()
+        findUserById(userId);
+        return followRepository.findByFollowerId(userId).stream()
                 .map(FollowDto::of)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<NewsFeedDto> getFeeds(Long userId) {
-        userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
+        validateUser(userId);
+        List<Long> followingIds = getFollowingIds(userId);
+        List<NotificationDto> notificationDtos = getNotifications(followingIds);
+        List<PostResponseDto> postDtos = getPosts(followingIds).block();
 
-        // 현재 사용자가 팔로우하는 사용자들의 ID 목록
-        List<Long> followingIds = followRepository.findByFollowerId(userId).stream()
-                .map(follow -> follow.getFollowing().getId())
-                .collect(Collectors.toList());
-
-        // 현재 사용자가 팔로우하는 사용자들의 활동 (알림) 가져오기
-        List<Notification> notifications = notificationRepository.findByFromUserIdIn(followingIds);
-        List<NotificationDto> notificationDtos = notifications.stream()
-                .map(NotificationDto::getFollowNotification)
-                .sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed())
-                .collect(Collectors.toList());
-
-        // 현재 사용자가 팔로우하는 사용자들의 게시물 가져오기
-        Mono<List<PostResponseDto>> response = webClient.post()
-                .uri("http://localhost:8082/api/internal/posts/follows")
-                .bodyValue(followingIds)
-                .retrieve()
-                .bodyToFlux(PostResponseDto.class)
-                .collectList();
-
-        List<PostResponseDto> postDtos = response.block();
-        System.out.println(postDtos.toString());
         return List.of(new NewsFeedDto(notificationDtos, postDtos));
     }
 
     @Transactional(readOnly = true)
     public List<NotificationDto> getMyNotis(Long userId) {
-        userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        List<Notification> notis = new ArrayList<>();
-        if (notificationRepository.existsByToUserId(userId)) { // notification
-            List<Notification> notifications = notificationRepository.findByToUserId(userId);
-            for (Notification noti : notifications) {
-                if (!noti.getFromUser().getId().equals(userId)) { // 본인 제외
-                    notis.add(noti);
-                }
-            }
-        }
-        return notis.stream()
+        validateUser(userId);
+        return notificationRepository.findByToUserId(userId).stream()
+                .filter(noti -> !noti.getFromUser().getId().equals(userId)) // 본인이 보낸 알림 제외
                 .map(NotificationDto::getMyNotification)
                 .sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }
 
+    private void validateUser(Long userId) {
+        userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+    }
+
+    private void validateSelfFollow(Long userId, Long followingId) {
+        if (userId.equals(followingId)) {
+            throw new BadRequestException("사용자는 자신을 팔로우할 수 없습니다.");
+        }
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
+        );
+    }
+
+    private void unfollowExistingFollow(Follow follow) {
+        Long followId = follow.getId();
+        followRepository.delete(follow);
+        notificationRepository.deleteAllByTypeId(followId);
+    }
+
+    private void createAndSaveNewFollow(User user, User following) {
+        Follow follow = Follow.builder()
+                .follower(user)
+                .following(following)
+                .build();
+        follow = followRepository.save(follow);
+        notificationRepository.mSave(user.getId(), following.getId(), NotiType.FOLLOW.name(), 0L, follow.getId());
+    }
+
+    private List<Long> getFollowingIds(Long userId) {
+        return followRepository.findByFollowerId(userId).stream()
+                .map(follow -> follow.getFollowing().getId())
+                .collect(Collectors.toList());
+    }
+
+    private List<NotificationDto> getNotifications(List<Long> followingIds) {
+        return notificationRepository.findByFromUserIdIn(followingIds).stream()
+                .map(NotificationDto::getFollowNotification)
+                .sorted(Comparator.comparing(NotificationDto::getCreatedAt).reversed())
+                .collect(Collectors.toList());
+    }
+
     // RestApi
+    private Mono<List<PostResponseDto>> getPosts(List<Long> followingIds) {
+        return webClient.post()
+                .uri("http://localhost:8082/api/internal/posts/follows")
+                .bodyValue(followingIds)
+                .retrieve()
+                .bodyToFlux(PostResponseDto.class)
+                .collectList();
+    }
+
     @Transactional
     public void deleteNewsfeedByUserId(Long userId) {
         notificationRepository.deleteAllByToUserId(userId);
@@ -133,7 +131,7 @@ public class NewsFeedService {
     }
 
     @Transactional
-    public void createNotification(NotificationCreateRequest request) {
+    public void createNotification(CreateNotificationDto request) {
         notificationRepository.mSave(request.getFromUserId(), request.getToUserId(),
                 request.getType(), request.getPostId(), request.getTypeId());
     }
