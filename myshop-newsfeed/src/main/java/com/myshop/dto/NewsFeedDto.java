@@ -1,5 +1,6 @@
 package com.myshop.dto;
 
+import com.myshop.global.dto.PostResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

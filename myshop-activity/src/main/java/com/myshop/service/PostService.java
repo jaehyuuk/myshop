@@ -2,6 +2,7 @@ package com.myshop.service;
 
 import com.myshop.domain.*;
 import com.myshop.dto.*;
+import com.myshop.global.dto.PostResponseDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.*;
 import com.myshop.user.domain.User;
@@ -191,9 +192,23 @@ public class PostService {
         likeRepository.deleteAllByUserId(userId);
     }
 
-    public Flux<PostDto> getPostsByUserIds(List<Long> followingIds) {
+    public Flux<PostResponseDto> getPostsByUserIds(List<Long> followingIds) {
         List<Post> posts = postRepository.findByUserIdIn(followingIds);
         return Flux.fromIterable(posts)
-                .map(PostDto::of);
+                .map(PostDto::of)
+                .map(this::convertToPostResponseDto);
+    }
+
+    private PostResponseDto convertToPostResponseDto(PostDto postDto) {
+        return PostResponseDto.builder()
+                .id(postDto.getId())
+                .content(postDto.getContent())
+                .name(postDto.getName())
+                .profileImg(postDto.getProfileImg())
+                .userId(postDto.getUserId())
+                .likeCount(postDto.getLikeCount())
+                .commentCount(postDto.getCommentCount())
+                .createdAt(postDto.getCreatedAt())
+                .build();
     }
 }

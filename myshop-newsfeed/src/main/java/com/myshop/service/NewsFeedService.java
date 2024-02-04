@@ -2,6 +2,7 @@ package com.myshop.service;
 
 import com.myshop.domain.*;
 import com.myshop.dto.*;
+import com.myshop.global.dto.PostResponseDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;

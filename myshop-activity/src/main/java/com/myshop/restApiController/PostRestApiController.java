@@ -1,6 +1,7 @@
 package com.myshop.restApiController;
 
 import com.myshop.dto.PostDto;
+import com.myshop.global.dto.PostResponseDto;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ public class PostRestApiController {
     }
 
     @PostMapping("/follows")
-    public Flux<PostDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
+    public Flux<PostResponseDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
         return postService.getPostsByUserIds(followingIds);
     }
 }

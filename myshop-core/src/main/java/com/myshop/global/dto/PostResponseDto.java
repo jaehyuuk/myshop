@@ -1,30 +1,19 @@
-package com.myshop.dto;
+package com.myshop.global.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class PostResponseDto {
-    @JsonProperty("id")
     private Long id;
-    @JsonProperty("content")
     private String content;
-    @JsonProperty("name")
     private String name;
-    @JsonProperty("profileImg")
     private String profileImg;
-    @JsonProperty("userId")
     private Long userId;
-    @JsonProperty("likeCount")
     private Integer likeCount;
-    @JsonProperty("commentCount")
     private Integer commentCount;
-    @JsonProperty("createdAt")
     private String createdAt;
 
     @Builder
