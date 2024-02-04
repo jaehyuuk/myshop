@@ -2,8 +2,8 @@ package com.myshop.controller;
 
 import com.myshop.dto.LoginDto;
 import com.myshop.dto.RegisterDto;
-import com.myshop.dto.TokenResponseDto;
-import com.myshop.dto.UserDto;
+import com.myshop.global.dto.TokenResponseDto;
+import com.myshop.user.dto.UserDto;
 import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.AuthService;
 import lombok.RequiredArgsConstructor;

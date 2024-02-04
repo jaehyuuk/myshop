@@ -1,7 +1,7 @@
 package com.myshop.global.config;
 
 import com.myshop.global.filter.JwtAuthenticationFilter;
-import com.myshop.global.jwt.JwtTokenProvider;
+import com.myshop.global.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;

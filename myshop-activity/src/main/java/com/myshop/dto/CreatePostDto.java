@@ -1,7 +1,7 @@
 package com.myshop.dto;
 
 import com.myshop.domain.Post;
-import com.myshop.domain.User;
+import com.myshop.user.domain.User;
 import lombok.Getter;
 import lombok.Setter;
 

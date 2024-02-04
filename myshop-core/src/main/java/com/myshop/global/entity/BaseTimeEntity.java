@@ -1,4 +1,4 @@
-package com.myshop.domain;
+package com.myshop.global.entity;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;

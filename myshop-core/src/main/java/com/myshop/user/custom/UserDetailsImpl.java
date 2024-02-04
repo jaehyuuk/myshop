@@ -1,6 +1,6 @@
-package com.myshop.global.custom;
+package com.myshop.user.custom;
 
-import com.myshop.domain.User;
+import com.myshop.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

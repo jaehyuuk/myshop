@@ -1,7 +1,7 @@
-package com.myshop.global.jwt;
+package com.myshop.global.token;
 
-import com.myshop.global.custom.UserDetailsImpl;
-import com.myshop.global.custom.UserDetailsServiceImpl;
+import com.myshop.user.custom.UserDetailsImpl;
+import com.myshop.user.custom.UserDetailsServiceImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

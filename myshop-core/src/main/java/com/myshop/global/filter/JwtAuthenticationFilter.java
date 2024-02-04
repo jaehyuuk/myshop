@@ -1,6 +1,6 @@
 package com.myshop.global.filter;
 
-import com.myshop.global.jwt.JwtTokenProvider;
+import com.myshop.global.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

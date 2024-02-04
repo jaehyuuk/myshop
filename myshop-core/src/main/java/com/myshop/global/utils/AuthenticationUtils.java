@@ -3,7 +3,7 @@ package com.myshop.global.utils;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.myshop.global.custom.UserDetailsImpl;
+import com.myshop.user.custom.UserDetailsImpl;
 
 @AllArgsConstructor
 public class AuthenticationUtils {

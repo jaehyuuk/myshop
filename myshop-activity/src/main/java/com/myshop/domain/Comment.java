@@ -1,5 +1,7 @@
 package com.myshop.domain;
 
+import com.myshop.global.entity.BaseTimeEntity;
+import com.myshop.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

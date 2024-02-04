@@ -1,7 +1,7 @@
-package com.myshop.global.custom;
+package com.myshop.user.custom;
 
-import com.myshop.domain.User;
-import com.myshop.repository.UserRepository;
+import com.myshop.user.domain.User;
+import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

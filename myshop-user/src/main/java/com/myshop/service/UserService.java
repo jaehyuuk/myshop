@@ -1,9 +1,11 @@
 package com.myshop.service;
 
-import com.myshop.domain.User;
-import com.myshop.dto.*;
+import com.myshop.user.domain.User;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.repository.UserRepository;
+import com.myshop.user.repository.UserRepository;
+import com.myshop.user.dto.UpdatePasswordDto;
+import com.myshop.user.dto.UpdateUserDto;
+import com.myshop.user.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;

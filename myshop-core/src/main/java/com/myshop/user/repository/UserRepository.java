@@ -1,6 +1,6 @@
-package com.myshop.repository;
+package com.myshop.user.repository;
 
-import com.myshop.domain.User;
+import com.myshop.user.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,8 +1,8 @@
 package com.myshop.controller;
 
-import com.myshop.dto.UpdatePasswordDto;
-import com.myshop.dto.UpdateUserDto;
-import com.myshop.dto.UserDto;
+import com.myshop.user.dto.UpdatePasswordDto;
+import com.myshop.user.dto.UpdateUserDto;
+import com.myshop.user.dto.UserDto;
 import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.UserService;
 import lombok.RequiredArgsConstructor;

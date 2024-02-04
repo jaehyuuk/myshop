@@ -1,7 +1,8 @@
-package com.myshop.domain;
+package com.myshop.user.domain;
 
-import com.myshop.dto.UpdatePasswordDto;
-import com.myshop.dto.UpdateUserDto;
+import com.myshop.global.entity.BaseTimeEntity;
+import com.myshop.user.dto.UpdatePasswordDto;
+import com.myshop.user.dto.UpdateUserDto;
 import com.myshop.global.exception.BadRequestException;
 import lombok.Builder;
 import lombok.Getter;

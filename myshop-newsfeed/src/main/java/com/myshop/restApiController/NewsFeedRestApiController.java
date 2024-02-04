@@ -1,6 +1,6 @@
 package com.myshop.restApiController;
 
-import com.myshop.dto.CreateNotificationDto;
+import com.myshop.global.dto.CreateNotificationDto;
 import com.myshop.service.NewsFeedService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
