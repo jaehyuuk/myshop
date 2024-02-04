@@ -67,16 +67,9 @@ public class Post extends BaseTimeEntity {
     }
 
     public void removeComment(Comment comment, Long userId) {
-        if(comment.getWriter().getId() != userId) {
+        if (!comment.getWriter().getId().equals(userId)) {
             throw new BadRequestException("댓글 삭제는 댓글 작성자만 가능합니다.");
         }
-
-        Iterator<Comment> iterator = this.comments.iterator();
-        while (iterator.hasNext()) {
-            Comment e = iterator.next();
-            if (comment.equals(e)) {
-                iterator.remove();
-            }
-        }
+        comments.removeIf(e -> e.equals(comment));
     }
 }

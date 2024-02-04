@@ -80,14 +80,8 @@ public class PostService {
     public void removeComment(Long userId, Long postId, Long commentId) {
         validateUser(userId);
         Post post = findPostById(postId);
-        Map<Long, Comment> comments = post.getComments()
-                .stream()
-                .collect(Collectors.toMap(Comment::getId, Function.identity()));
-
-        if (!comments.containsKey(commentId)) {
-            throw new BadRequestException("댓글 삭제는 댓글을 단 게시물에만 가능합니다.");
-        }
-        post.removeComment(comments.get(commentId), userId);
+        Comment comment = findCommentByIdAndPost(commentId, post);
+        post.removeComment(comment, userId);
         deleteNotificationForComment(commentId);
     }
 
@@ -144,6 +138,13 @@ public class PostService {
         request.setPostId(postId);
         request.setTypeId(typeId);
         return request;
+    }
+
+    private Comment findCommentByIdAndPost(Long commentId, Post post) {
+        return post.getComments().stream()
+                .filter(comment -> comment.getId().equals(commentId))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("해당 게시물에 존재하지 않는 댓글입니다."));
     }
 
     // Rest Api
