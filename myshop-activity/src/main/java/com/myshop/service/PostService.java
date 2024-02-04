@@ -26,9 +26,7 @@ public class PostService {
 
     @Transactional
     public PostDetailDto createPost(Long userId, CreatePostDto postDto) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
+        User user = findUserById(userId);
         Post post = postRepository.save(postDto.toEntity(user));
         return getPostById(post.getId());
     }
@@ -41,103 +39,38 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDetailDto getPostById(Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
+        Post post = findPostById(postId);
         return PostDetailDto.of(post);
     }
 
     @Transactional
     public void deletePost(Long userId, Long postId) {
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
-        if (!userId.equals(post.getUser().getId())) {
-            throw new BadRequestException("본인의 게시물만 삭제가 가능합니다.");
-        }
-        webClient.delete()
-                .uri("http://localhost:8081/api/internal/feeds/notis/post/" + postId)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        validatePostOwnership(userId, postId);
+        deleteNotificationsForPost(postId);
         postRepository.deleteById(postId);
     }
 
     @Transactional
     public void likePost(Long userId, Long postId) {
-        userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
+        User user = findUserById(userId);
+        Post post = findPostById(postId);
+        Like like = post.getLikes().stream()
+                .filter(l -> l.getUserId().equals(userId))
+                .findFirst()
+                .orElse(null);
 
-        boolean alreadyLike = post.getLikes()
-                .stream()
-                .map(Like::getUserId)
-                .anyMatch(uid -> uid == userId);
-
-        if (alreadyLike) { // 이미 좋아요 했다면 취소
-            Map<Long, Like> likes = post.getLikes()
-                    .stream()
-                    .collect(Collectors.toMap(Like::getUserId, Function.identity()));
-            Like like = likes.get(userId);
-            post.removeLike(like);
-            webClient.delete()
-                    .uri("http://localhost:8081/api/internal/feeds/notis/type/" + like.getId())
-                    .retrieve()
-                    .bodyToMono(Void.class)
-                    .block();
-        }
-        else { // 좋아요
-            Like like = Like.builder().userId(userId).build();
-            post.addLike(like);
-            likeRepository.save(like);
-
-            // 알림 저장 restApi
-            CreateNotificationDto request = new CreateNotificationDto();
-            request.setFromUserId(userId);
-            request.setToUserId(post.getUser().getId());
-            request.setType("LIKE");
-            request.setPostId(postId);
-            request.setTypeId(like.getId());
-
-            webClient.post()
-                    .uri("http://localhost:8081/api/internal/feeds/notis")
-                    .bodyValue(request)
-                    .retrieve()
-                    .toBodilessEntity()
-                    .block();
+        if (like != null) {
+            deleteNotificationsForLike(post, like);
+        } else {
+            addLikeAndNotification(user, post);
         }
     }
 
     @Transactional
     public List<CommentDto> addComment(Long userId, Long postId, CreateCommentDto commentDto) {
-        User user = userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
-        Comment newComment = commentDto.toEntity(user);
-        post.addComment(newComment);
-        commentRepository.save(newComment);
-
-        // 알림 저장 restApi
-        CreateNotificationDto request = new CreateNotificationDto();
-        request.setFromUserId(userId);
-        request.setToUserId(post.getUser().getId());
-        request.setType("COMMENT");
-        request.setPostId(postId);
-        request.setTypeId(newComment.getId());
-
-        webClient.post()
-                .uri("http://localhost:8081/api/internal/feeds/notis")
-                .bodyValue(request)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
-
+        User user = findUserById(userId);
+        Post post = findPostById(postId);
+        CreateCommentAndNotification(user, post, commentDto);
         return post.getComments().stream()
                 .map(CommentDto::of)
                 .collect(Collectors.toList());
@@ -145,12 +78,8 @@ public class PostService {
 
     @Transactional
     public void removeComment(Long userId, Long postId, Long commentId) {
-        userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-        Post post = postRepository.findById(postId).orElseThrow(
-                () -> new BadRequestException("존재하지 않는 게시물입니다.")
-        );
+        validateUser(userId);
+        Post post = findPostById(postId);
         Map<Long, Comment> comments = post.getComments()
                 .stream()
                 .collect(Collectors.toMap(Comment::getId, Function.identity()));
@@ -159,6 +88,93 @@ public class PostService {
             throw new BadRequestException("댓글 삭제는 댓글을 단 게시물에만 가능합니다.");
         }
         post.removeComment(comments.get(commentId), userId);
+        deleteNotificationForComment(commentId);
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+            () -> new BadRequestException("유저 정보를 찾을 수 없습니다."));
+    }
+
+    private Post findPostById(Long postId) {
+        return postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다."));
+    }
+
+    private void validateUser(Long userId) {
+        userRepository.findById(userId).orElseThrow(
+                () -> new BadRequestException("유저 정보를 찾을 수 없습니다."));
+    }
+
+    private void validatePostOwnership(Long userId, Long postId) {
+        Post post = postRepository.findById(postId).orElseThrow(
+                () -> new BadRequestException("존재하지 않는 게시물입니다."));
+        if (!userId.equals(post.getUser().getId())) {
+            throw new BadRequestException("본인의 게시물만 삭제가 가능합니다.");
+        }
+    }
+
+    private void addLikeAndNotification(User user, Post post) {
+        Like like = Like.builder().userId(user.getId()).build();
+        post.addLike(like);
+        likeRepository.save(like);
+
+        CreateNotificationDto request = createNotificationDto(
+                user.getId(), post.getUser().getId(), "LIKE", post.getId(), like.getId()
+        );
+        saveNotification(request);
+    }
+
+    private void CreateCommentAndNotification(User user, Post post, CreateCommentDto commentDto) {
+        Comment newComment = commentDto.toEntity(user);
+        post.addComment(newComment);
+        commentRepository.save(newComment);
+
+        CreateNotificationDto request = createNotificationDto(
+                user.getId(), post.getUser().getId(), "COMMENT", post.getId(), newComment.getId()
+        );
+        saveNotification(request);
+    }
+
+    private CreateNotificationDto createNotificationDto(Long fromUserId, Long toUserId, String type, Long postId, Long typeId) {
+        CreateNotificationDto request = new CreateNotificationDto();
+        request.setFromUserId(fromUserId);
+        request.setToUserId(toUserId);
+        request.setType(type);
+        request.setPostId(postId);
+        request.setTypeId(typeId);
+        return request;
+    }
+
+    // Rest Api
+    private void saveNotification(CreateNotificationDto request) {
+        webClient.post()
+                .uri("http://localhost:8081/api/internal/feeds/notis")
+                .bodyValue(request)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+    }
+
+    private void deleteNotificationsForPost(Long postId) {
+        webClient.delete()
+                .uri("http://localhost:8081/api/internal/feeds/notis/post/" + postId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    private void deleteNotificationsForLike(Post post, Like like) {
+        post.removeLike(like);
+        likeRepository.delete(like);
+        webClient.delete()
+                .uri("http://localhost:8081/api/internal/feeds/notis/type/" + like.getId())
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    private void deleteNotificationForComment(Long commentId) {
         webClient.delete()
                 .uri("http://localhost:8081/api/internal/feeds/notis/type/" + commentId)
                 .retrieve()
@@ -166,7 +182,6 @@ public class PostService {
                 .block();
     }
 
-    // Rest Api
     @Transactional
     public void deleteAllByUserId(Long userId) {
         postRepository.deleteAllByUserId(userId);
@@ -174,11 +189,9 @@ public class PostService {
         likeRepository.deleteAllByUserId(userId);
     }
 
-    // 사용자 ID 목록을 기반으로 PostResponseDto 목록을 조회하고 반환
     public Flux<PostDto> getPostsByUserIds(List<Long> followingIds) {
         List<Post> posts = postRepository.findByUserIdIn(followingIds);
         return Flux.fromIterable(posts)
                 .map(PostDto::of);
     }
-
 }
