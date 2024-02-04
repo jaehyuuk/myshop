@@ -16,7 +16,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     List<Notification> findByToUserId(Long userId);
     List<Notification> findByFromUserIdIn(List<Long> userIds);
-    boolean existsByToUserId(Long userId);
     Optional<Notification> deleteAllByPostId(Long postId);
     Optional<Notification> deleteAllByTypeId(Long typeId);
     Optional<Notification> deleteAllByToUserId(Long userId);
