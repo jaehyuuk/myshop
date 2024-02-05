@@ -1,15 +1,14 @@
 package com.myshop;
 
+import com.myshop.global.config.JpaAuditingConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.context.annotation.Import;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
-@EnableScheduling
-@EnableJpaAuditing
+@Import(JpaAuditingConfig.class)
 @SpringBootApplication
 public class ActivityApplication {
 
