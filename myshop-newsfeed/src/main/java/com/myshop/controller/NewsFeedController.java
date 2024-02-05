@@ -1,7 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.FollowDto;
-import com.myshop.dto.NewsFeedDto;
+import com.myshop.dto.CreateNewsFeedDto;
 import com.myshop.dto.NotificationDto;
 import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.service.NewsFeedService;
@@ -17,7 +17,7 @@ public class NewsFeedController {
     private final NewsFeedService newsFeedService;
 
     @GetMapping
-    public List<NewsFeedDto> getFeeds() {
+    public List<CreateNewsFeedDto> getFeeds() {
         Long userId = AuthenticationUtils.getUserIdByToken();
         return newsFeedService.getFeeds(userId);
     }

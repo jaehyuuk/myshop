@@ -50,13 +50,13 @@ public class NewsFeedService {
     }
 
     @Transactional(readOnly = true)
-    public List<NewsFeedDto> getFeeds(Long userId) {
+    public List<CreateNewsFeedDto> getFeeds(Long userId) {
         validateUser(userId);
         List<Long> followingIds = getFollowingIds(userId);
         List<NotificationDto> notificationDtos = getNotifications(followingIds);
         List<PostResponseDto> postDtos = getPosts(followingIds).block();
 
-        return List.of(new NewsFeedDto(notificationDtos, postDtos));
+        return List.of(new CreateNewsFeedDto(notificationDtos, postDtos));
     }
 
     @Transactional(readOnly = true)

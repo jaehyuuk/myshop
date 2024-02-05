@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @AllArgsConstructor
-public class NewsFeedDto {
+public class CreateNewsFeedDto {
     private List<NotificationDto> notificationDtos;
     private List<PostResponseDto> postDtos;
 }
