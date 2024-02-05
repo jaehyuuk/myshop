@@ -48,8 +48,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable() // CSRF 보호 비활성화
                 .authorizeRequests()
-                .antMatchers("/api/auth/join",
-                        "/api/auth/login",
+                .antMatchers("/api/users/auth/join",
+                        "/api/users/auth/login",
                         "/swagger-ui/**",
                         "/swagger-resources/**",
                         "/v3/api-docs/**",

@@ -1,6 +1,5 @@
-package com.myshop.restApiController;
+package com.myshop.api;
 
-import com.myshop.dto.PostDto;
 import com.myshop.global.dto.PostResponseDto;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -12,13 +11,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/internal/posts")
 @RequiredArgsConstructor
-public class PostRestApiController {
+public class NewsFeedRestApi {
     private final PostService postService;
-
-    @DeleteMapping("/user/{userId}")
-    public void deletePostsByUserId(@PathVariable Long userId) {
-        postService.deleteAllByUserId(userId);
-    }
 
     @PostMapping("/follows")
     public Flux<PostResponseDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
