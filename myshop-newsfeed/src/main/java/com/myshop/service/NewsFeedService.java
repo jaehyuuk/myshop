@@ -50,7 +50,7 @@ public class NewsFeedService {
     }
 
     @Transactional(readOnly = true)
-    public List<CreateNewsFeedDto> getFeeds(Long userId) {
+    public List<CreateNewsFeedDto> getNewsFeed(Long userId) {
         validateUser(userId);
         List<Long> followingIds = getFollowingIds(userId);
         List<NotificationDto> notificationDtos = getNotifications(followingIds);

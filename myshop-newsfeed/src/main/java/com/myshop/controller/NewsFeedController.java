@@ -17,9 +17,9 @@ public class NewsFeedController {
     private final NewsFeedService newsFeedService;
 
     @GetMapping
-    public List<CreateNewsFeedDto> getFeeds() {
+    public List<CreateNewsFeedDto> getNewsFeed() {
         Long userId = AuthenticationUtils.getUserIdByToken();
-        return newsFeedService.getFeeds(userId);
+        return newsFeedService.getNewsFeed(userId);
     }
 
     @GetMapping("/me")
