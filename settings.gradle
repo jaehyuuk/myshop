@@ -3,3 +3,5 @@ include 'myshop-core'
 include 'myshop-user'
 include 'myshop-activity'
 include 'myshop-newsfeed'
+include 'myshop-eureka-server'
+
