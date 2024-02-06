@@ -4,13 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
-public class ApiResponse {
+public class ApiResponse<T> {
     private boolean success;
     private int status;
-    private List<PostResponseDto> data;
+    private T data;
     private LocalDateTime timeStamp;
 }

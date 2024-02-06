@@ -12,6 +12,7 @@ import com.myshop.user.domain.User;
 import com.myshop.global.dto.CreateNotificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,14 +123,14 @@ public class NewsFeedService {
     private List<PostResponseDto> getPosts(List<Long> followingIds) {
         WebClient webClient = WebClient.create("http://localhost:8082");
 
-        Mono<ApiResponse> apiResponseMono = webClient.post()
+        Mono<ApiResponse<List<PostResponseDto>>> apiResponseMono = webClient.post()
                 .uri("/api/internal/posts/follows")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(followingIds)
                 .retrieve()
-                .bodyToMono(ApiResponse.class);
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<List<PostResponseDto>>>() {});
 
-        ApiResponse apiResponse = apiResponseMono.block(); // 블로킹 호출로 결과를 기다림
+        ApiResponse<List<PostResponseDto>> apiResponse = apiResponseMono.block(); // 블로킹 호출로 결과를 기다림
 
         return apiResponse.getData();
     }
