@@ -31,7 +31,6 @@ subprojects {
 
 	// 관리하는 모듈의 공통 dependencies
 	dependencies {
-		implementation 'org.springframework.boot:spring-boot-starter-web'
 		compileOnly 'org.projectlombok:lombok'
 		annotationProcessor 'org.projectlombok:lombok'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -50,6 +49,7 @@ subprojects {
 
 project(':myshop-core') {
 	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 		implementation 'io.jsonwebtoken:jjwt:0.9.1'
 	}
@@ -63,6 +63,7 @@ project(':myshop-user') {
 	}
 
 	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 		implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 		implementation project(':myshop-core')
@@ -81,6 +82,7 @@ project(':myshop-activity') {
 	}
 
 	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 		implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 		implementation project(':myshop-core')
@@ -99,6 +101,7 @@ project(':myshop-newsfeed') {
 	}
 
 	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
 		implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 		implementation project(':myshop-core')
