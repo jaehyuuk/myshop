@@ -2,6 +2,7 @@ package com.myshop.service;
 
 import com.myshop.domain.*;
 import com.myshop.dto.*;
+import com.myshop.global.dto.ApiResponse;
 import com.myshop.global.dto.PostResponseDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
@@ -11,11 +12,13 @@ import com.myshop.user.domain.User;
 import com.myshop.global.dto.CreateNotificationDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +57,7 @@ public class NewsFeedService {
         validateUser(userId);
         List<Long> followingIds = getFollowingIds(userId);
         List<NotificationDto> notificationDtos = getNotifications(followingIds);
-        List<PostResponseDto> postDtos = getPosts(followingIds).block();
+        List<PostResponseDto> postDtos = getPosts(followingIds);
 
         return List.of(new CreateNewsFeedDto(notificationDtos, postDtos));
     }
@@ -116,13 +119,19 @@ public class NewsFeedService {
     }
 
     // RestApi
-    private Mono<List<PostResponseDto>> getPosts(List<Long> followingIds) {
-        return webClient.post()
-                .uri("http://localhost:8082/api/internal/posts/follows")
+    private List<PostResponseDto> getPosts(List<Long> followingIds) {
+        WebClient webClient = WebClient.create("http://localhost:8082");
+
+        Mono<ApiResponse> apiResponseMono = webClient.post()
+                .uri("/api/internal/posts/follows")
+                .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(followingIds)
                 .retrieve()
-                .bodyToFlux(PostResponseDto.class)
-                .collectList();
+                .bodyToMono(ApiResponse.class);
+
+        ApiResponse apiResponse = apiResponseMono.block(); // 블로킹 호출로 결과를 기다림
+
+        return apiResponse.getData();
     }
 
     @Transactional

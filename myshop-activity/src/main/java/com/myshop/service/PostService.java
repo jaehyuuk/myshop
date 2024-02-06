@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -192,23 +191,22 @@ public class PostService {
         likeRepository.deleteAllByUserId(userId);
     }
 
-    public Flux<PostResponseDto> getPostsByUserIds(List<Long> followingIds) {
+    public List<PostResponseDto> getPostsByUserIds(List<Long> followingIds) {
         List<Post> posts = postRepository.findByUserIdIn(followingIds);
-        return Flux.fromIterable(posts)
-                .map(PostDto::of)
-                .map(this::convertToPostResponseDto);
+        return posts.stream()
+                .map(this::convertToPostResponseDto)
+                .collect(Collectors.toList());
     }
 
-    private PostResponseDto convertToPostResponseDto(PostDto postDto) {
-        return PostResponseDto.builder()
-                .id(postDto.getId())
-                .content(postDto.getContent())
-                .name(postDto.getName())
-                .profileImg(postDto.getProfileImg())
-                .userId(postDto.getUserId())
-                .likeCount(postDto.getLikeCount())
-                .commentCount(postDto.getCommentCount())
-                .createdAt(postDto.getCreatedAt())
-                .build();
+    private PostResponseDto convertToPostResponseDto(Post post) {
+        return new PostResponseDto(
+                post.getId(),
+                post.getContent(),
+                post.getUser().getName(),
+                post.getUser().getProfileImg(),
+                post.getUser().getId(),
+                post.getLikes().size(),
+                post.getComments().size(),
+                post.getCreatedAt());
     }
 }

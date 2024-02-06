@@ -4,7 +4,6 @@ import com.myshop.global.dto.PostResponseDto;
 import com.myshop.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -15,7 +14,7 @@ public class NewsFeedRestApi {
     private final PostService postService;
 
     @PostMapping("/follows")
-    public Flux<PostResponseDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
+    public List<PostResponseDto> getPostsByUserIds(@RequestBody List<Long> followingIds) {
         return postService.getPostsByUserIds(followingIds);
     }
 }
