@@ -16,15 +16,46 @@ spring:
 
   cloud:
     gateway:
+      # 공통 필터는 아래와 같이 작성
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+
       routes:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
+            - Path=api/auth/join
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Authorization
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=api/auth/login
+            - Method=POST
+          filters:
+            - RemoveRequestHeader=Authorization
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/auth/**
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
             - Path=/api/users/**
+
         - id: feed-service
           uri: lb://FEED-SERVICE
           predicates:
             - Path=/api/feeds/**
+
         - id: post-service
           uri: lb://POST-SERVICE
           predicates:
