@@ -1,4 +1,4 @@
-package com.myshop.api;
+package com.myshop.controller;
 
 import com.myshop.global.dto.CreateNotificationDto;
 import com.myshop.service.NewsFeedService;
@@ -9,8 +9,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/internal/feeds")
 @RequiredArgsConstructor
-public class PostRestApi {
+public class InternalNewsFeedController {
     private final NewsFeedService newsFeedService;
+
+    @DeleteMapping("/user/{userId}")
+    public ResponseEntity<?> deleteNewsfeedByUserId(@PathVariable Long userId) {
+        newsFeedService.deleteNewsfeedByUserId(userId);
+        return ResponseEntity.ok().build();
+    }
 
     @PostMapping("/notis")
     public ResponseEntity<?> createNotification(@RequestBody CreateNotificationDto request) {
