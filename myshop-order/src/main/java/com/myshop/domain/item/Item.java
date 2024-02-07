@@ -1,15 +1,21 @@
 package com.myshop.domain.item;
 
+import com.myshop.dto.ItemUpdateDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "items")
 @Getter
+@Table(name = "items")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type")
 @NoArgsConstructor
-public class Item {
+@SuperBuilder
+public abstract class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,6 +27,16 @@ public class Item {
     private int price;
     @Column(name = "stock_quantity")
     private int stockQuantity;
-    @Enumerated(EnumType.STRING)
-    private ItemStatus status;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+    @Column(name = "modified_at")
+    private LocalDateTime modifiedAt;
+
+    public void updateItem(ItemUpdateDto itemDto) {
+        if(itemDto.getName() != null) this.name = itemDto.getName();
+        if(itemDto.getContent() != null) this.content = itemDto.getContent();
+        if(itemDto.getPrice() != null) this.price = itemDto.getPrice();
+        if(itemDto.getStockQuantity() != null) this.stockQuantity = itemDto.getStockQuantity();
+        this.modifiedAt = LocalDateTime.now();
+    }
 }
