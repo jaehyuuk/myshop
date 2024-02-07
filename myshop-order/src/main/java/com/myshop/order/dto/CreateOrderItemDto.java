@@ -10,6 +10,7 @@ public class CreateOrderItemDto {
     private int count;
 
     public OrderItem toEntity(Item item) {
+        item.removeStock(count); // stock 감소
         return OrderItem.builder()
                 .item(item)
                 .orderPrice(item.getPrice() * count)
