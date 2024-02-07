@@ -33,6 +33,13 @@ public class ItemService {
         return ItemDetailDto.of(item);
     }
 
+    public int getItemStockQuantity(Long itemId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(
+                () -> new BadRequestException("상품이 존재하지 않습니다.")
+        );
+        return item.getStockQuantity();
+    }
+
     public ItemDetailDto createGeneralItem(ItemCreateDto dto) {
         GeneralItem item = GeneralItem.builder()
                 .name(dto.getName())
