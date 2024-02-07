@@ -5,6 +5,7 @@ import com.myshop.global.token.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
@@ -55,7 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/v3/api-docs/**",
                         "/api/internal/**")
                 .permitAll() // 인증 필요 없는 URL 설정
-                .anyRequest().authenticated() // 그 외 요청은 인증 필요
+                .antMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN")
+                .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 정책: STATELESS
                 .and()
