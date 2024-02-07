@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class ItemUpdateDto {
+public class UpdateItemDto {
     private String name;
     private String content;
     private Integer price;

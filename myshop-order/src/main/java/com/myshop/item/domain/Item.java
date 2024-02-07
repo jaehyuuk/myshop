@@ -1,7 +1,7 @@
 package com.myshop.item.domain;
 
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.item.dto.ItemUpdateDto;
+import com.myshop.item.dto.UpdateItemDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -33,7 +33,7 @@ public abstract class Item {
     @Column(name = "modified_at")
     private LocalDateTime modifiedAt;
 
-    public void updateItem(ItemUpdateDto itemDto) {
+    public void updateItem(UpdateItemDto itemDto) {
         if(itemDto.getName() != null) this.name = itemDto.getName();
         if(itemDto.getContent() != null) this.content = itemDto.getContent();
         if(itemDto.getPrice() != null) this.price = itemDto.getPrice();

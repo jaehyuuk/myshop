@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class ItemCreateDto {
+public class CreateItemDto {
     private String name;
     private String content;
     private int price;

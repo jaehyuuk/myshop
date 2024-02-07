@@ -1,9 +1,9 @@
 package com.myshop.item.controller;
 
-import com.myshop.item.dto.ItemCreateDto;
+import com.myshop.item.dto.CreateItemDto;
 import com.myshop.item.dto.ItemDetailDto;
 import com.myshop.item.dto.ItemDto;
-import com.myshop.item.dto.ItemUpdateDto;
+import com.myshop.item.dto.UpdateItemDto;
 import com.myshop.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -36,19 +36,19 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<ItemDetailDto> createItem(@RequestBody ItemCreateDto itemCreateDto) {
+    public ResponseEntity<ItemDetailDto> createItem(@RequestBody CreateItemDto createItemDto) {
         ItemDetailDto itemDetailDto;
-        if ("RESERVED".equals(itemCreateDto.getType())) {
-            itemDetailDto = itemService.createReservedItem(itemCreateDto);
+        if ("RESERVED".equals(createItemDto.getType())) {
+            itemDetailDto = itemService.createReservedItem(createItemDto);
         } else {
-            itemDetailDto = itemService.createGeneralItem(itemCreateDto);
+            itemDetailDto = itemService.createGeneralItem(createItemDto);
         }
         return new ResponseEntity<>(itemDetailDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/update/{itemId}")
-    public ResponseEntity<ItemDetailDto> updateItem(@PathVariable Long itemId, @RequestBody ItemUpdateDto itemUpdateDto) {
-        ItemDetailDto updatedItemDetailDto = itemService.updateItem(itemId, itemUpdateDto);
+    public ResponseEntity<ItemDetailDto> updateItem(@PathVariable Long itemId, @RequestBody UpdateItemDto updateItemDto) {
+        ItemDetailDto updatedItemDetailDto = itemService.updateItem(itemId, updateItemDto);
         return ResponseEntity.ok(updatedItemDetailDto);
     }
 
