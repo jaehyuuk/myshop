@@ -1,16 +1,16 @@
-package com.myshop.dto;
+package com.myshop.item.dto;
 
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
-public class ItemUpdateDto {
+public class ItemCreateDto {
     private String name;
     private String content;
-    private Integer price;
-    private Integer stockQuantity;
-    // ReservedItem 업데이트를 위한 필드
+    private int price;
+    private int stockQuantity;
+    private String type; // "REGULAR" 또는 "RESERVED"
     private LocalDateTime reservationStart;
     private LocalDateTime reservationEnd;
 }

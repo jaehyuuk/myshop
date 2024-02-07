@@ -1,4 +1,4 @@
-package com.myshop.domain.item;
+package com.myshop.item.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

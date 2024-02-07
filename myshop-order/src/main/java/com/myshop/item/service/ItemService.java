@@ -1,11 +1,14 @@
-package com.myshop.service;
+package com.myshop.item.service;
 
-import com.myshop.domain.item.Item;
-import com.myshop.domain.item.GeneralItem;
-import com.myshop.domain.item.ReservedItem;
-import com.myshop.dto.*;
+import com.myshop.item.domain.Item;
+import com.myshop.item.domain.GeneralItem;
+import com.myshop.item.domain.ReservedItem;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.repository.ItemRepository;
+import com.myshop.item.dto.ItemCreateDto;
+import com.myshop.item.dto.ItemDetailDto;
+import com.myshop.item.dto.ItemDto;
+import com.myshop.item.dto.ItemUpdateDto;
+import com.myshop.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository itemRepository;
+
+    public List<ItemDto> getAllItems() {
+        List<Item> items = itemRepository.findAll();
+        return items.stream().map(ItemDto::of).collect(Collectors.toList());
+    }
+
+    public ItemDetailDto getItemById(Long itemId) {
+        Item item = itemRepository.findById(itemId).orElseThrow(
+                () -> new BadRequestException("상품이 존재하지 않습니다.")
+        );
+        return ItemDetailDto.of(item);
+    }
 
     public ItemDetailDto createGeneralItem(ItemCreateDto dto) {
         GeneralItem item = GeneralItem.builder()
@@ -44,18 +59,6 @@ public class ItemService {
                 .build();
         Item savedItem = itemRepository.save(item);
         return ItemDetailDto.of(savedItem);
-    }
-
-    public List<ItemDto> getAllItems() {
-        List<Item> items = itemRepository.findAll();
-        return items.stream().map(ItemDto::of).collect(Collectors.toList());
-    }
-
-    public ItemDetailDto getItemById(Long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
-        return ItemDetailDto.of(item);
     }
 
     public ItemDetailDto updateItem(Long itemId, ItemUpdateDto itemUpdateDto) {
