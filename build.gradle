@@ -80,3 +80,11 @@ project(':myshop-newsfeed') {
 		implementation project(':myshop-core')
 	}
 }
+
+project(':myshop-order') {
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+		implementation 'org.springframework.boot:spring-boot-starter-security'
+		implementation project(':myshop-core')
+	}
+}
