@@ -37,12 +37,8 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<ItemDetailDto> createItem(@RequestBody CreateItemDto createItemDto) {
-        ItemDetailDto itemDetailDto;
-        if ("RESERVED".equals(createItemDto.getType())) {
-            itemDetailDto = itemService.createReservedItem(createItemDto);
-        } else {
-            itemDetailDto = itemService.createGeneralItem(createItemDto);
-        }
+        boolean isReserved = "RESERVED".equals(createItemDto.getType());
+        ItemDetailDto itemDetailDto = itemService.createItem(createItemDto, isReserved);
         return new ResponseEntity<>(itemDetailDto, HttpStatus.CREATED);
     }
 

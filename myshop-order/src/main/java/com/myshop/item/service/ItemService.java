@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,67 +29,62 @@ public class ItemService {
 
     @Transactional(readOnly = true)
     public ItemDetailDto getItemById(Long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
+        Item item = findByItemId(itemId);
         return ItemDetailDto.of(item);
     }
 
     @Transactional(readOnly = true)
     public int getItemStockQuantity(Long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
+        Item item = findByItemId(itemId);
         return item.getStockQuantity();
     }
 
     @Transactional
-    public ItemDetailDto createGeneralItem(CreateItemDto dto) {
-        GeneralItem item = GeneralItem.builder()
-                .name(dto.getName())
-                .content(dto.getContent())
-                .price(dto.getPrice())
-                .stockQuantity(dto.getStockQuantity())
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
-                .build();
-        Item savedItem = itemRepository.save(item);
-        return ItemDetailDto.of(savedItem);
-    }
-
-    @Transactional
-    public ItemDetailDto createReservedItem(CreateItemDto dto) {
-        ReservedItem item = ReservedItem.builder()
-                .name(dto.getName())
-                .content(dto.getContent())
-                .price(dto.getPrice())
-                .stockQuantity(dto.getStockQuantity())
-                .createdAt(LocalDateTime.now())
-                .modifiedAt(LocalDateTime.now())
-                .reservationStart(dto.getReservationStart())
-                .reservationEnd(dto.getReservationEnd())
-                .build();
+    public ItemDetailDto createItem(CreateItemDto dto, boolean isReserved) {
+        Item item;
+        if (isReserved) {
+            item = ReservedItem.builder()
+                    .name(dto.getName())
+                    .content(dto.getContent())
+                    .price(dto.getPrice())
+                    .stockQuantity(dto.getStockQuantity())
+                    .reservationStart(dto.getReservationStart())
+                    .reservationEnd(dto.getReservationEnd())
+                    .build();
+        } else {
+            item = GeneralItem.builder()
+                    .name(dto.getName())
+                    .content(dto.getContent())
+                    .price(dto.getPrice())
+                    .stockQuantity(dto.getStockQuantity())
+                    .build();
+        }
         Item savedItem = itemRepository.save(item);
         return ItemDetailDto.of(savedItem);
     }
 
     @Transactional
     public ItemDetailDto updateItem(Long itemId, UpdateItemDto updateItemDto) {
-        Item item = itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
+        Item item = findByItemId(itemId);
         item.updateItem(updateItemDto);
 
-        if (item instanceof ReservedItem && updateItemDto.getReservationStart() != null && updateItemDto.getReservationEnd() != null) {
-            ((ReservedItem) item).updateReservationTimes(updateItemDto.getReservationStart(), updateItemDto.getReservationEnd());
+        if (item instanceof ReservedItem) {
+            ReservedItem reservedItem = (ReservedItem) item;
+            if (updateItemDto.getReservationStart() != null && updateItemDto.getReservationEnd() != null) {
+                reservedItem.updateReservationTimes(updateItemDto.getReservationStart(), updateItemDto.getReservationEnd());
+            }
         }
-
-        Item updatedItem = itemRepository.save(item);
-        return ItemDetailDto.of(updatedItem);
+        return ItemDetailDto.of(itemRepository.save(item));
     }
 
     @Transactional
     public void deleteItem(Long itemId) {
         itemRepository.deleteById(itemId);
+    }
+
+    private Item findByItemId(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new BadRequestException("상품이 존재하지 않습니다.")
+        );
     }
 }
