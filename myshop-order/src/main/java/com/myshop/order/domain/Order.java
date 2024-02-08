@@ -35,6 +35,13 @@ public class Order extends BaseTimeEntity {
         this.status = status;
     }
 
+    public void cancel() {
+        this.status = OrderStatus.CANCEL;
+        for (OrderItem orderItem : orderItems) {
+            orderItem.getItem().addStock(orderItem.getCount()); // 각 주문 항목에 대해 재고 원복
+        }
+    }
+
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
         if (orderItem.getOrder() != this) {
