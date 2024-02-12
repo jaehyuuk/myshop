@@ -121,7 +121,7 @@ public class NewsFeedService {
 
     // RestApi
     private List<PostResponseDto> getPosts(List<Long> followingIds) {
-        WebClient webClient = WebClient.create("http://localhost:8082");
+        WebClient webClient = WebClient.create("http://localhost:8083");
 
         Mono<ApiResponse<List<PostResponseDto>>> apiResponseMono = webClient.post()
                 .uri("/api/internal/posts/follows")

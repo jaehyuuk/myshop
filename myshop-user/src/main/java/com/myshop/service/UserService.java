@@ -77,7 +77,7 @@ public class UserService {
     // Rest Api
     private void deleteNotification(Long userId) {
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/newsfeeds/user/" + userId)
+                .uri("http://localhost:8082/api/internal/feeds/user/" + userId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
@@ -85,7 +85,7 @@ public class UserService {
 
     private void deletePost(Long userId) {
         webClient.delete()
-                .uri("http://localhost:8082/api/internal/posts/user/" + userId)
+                .uri("http://localhost:8083/api/internal/posts/user/" + userId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();

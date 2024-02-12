@@ -151,7 +151,7 @@ public class PostService {
     // Rest Api
     private void saveNotification(CreateNotificationDto request) {
         webClient.post()
-                .uri("http://localhost:8081/api/internal/feeds/notis")
+                .uri("http://localhost:8082/api/internal/feeds/notis")
                 .bodyValue(request)
                 .retrieve()
                 .toBodilessEntity()
@@ -160,7 +160,7 @@ public class PostService {
 
     private void deleteNotificationsForPost(Long postId) {
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/feeds/notis/post/" + postId)
+                .uri("http://localhost:8082/api/internal/feeds/notis/post/" + postId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
@@ -170,7 +170,7 @@ public class PostService {
         post.removeLike(like);
         likeRepository.delete(like);
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/feeds/notis/type/" + like.getId())
+                .uri("http://localhost:8082/api/internal/feeds/notis/type/" + like.getId())
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
@@ -178,7 +178,7 @@ public class PostService {
 
     private void deleteNotificationForComment(Long commentId) {
         webClient.delete()
-                .uri("http://localhost:8081/api/internal/feeds/notis/type/" + commentId)
+                .uri("http://localhost:8082/api/internal/feeds/notis/type/" + commentId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
