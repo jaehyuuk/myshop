@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,8 @@ public class ItemService {
                     .stockQuantity(dto.getStockQuantity())
                     .reservationStart(dto.getReservationStart())
                     .reservationEnd(dto.getReservationEnd())
+                    .createdAt(LocalDateTime.now())
+                    .modifiedAt(LocalDateTime.now())
                     .build();
         } else {
             item = GeneralItem.builder()
@@ -57,6 +60,8 @@ public class ItemService {
                     .content(dto.getContent())
                     .price(dto.getPrice())
                     .stockQuantity(dto.getStockQuantity())
+                    .createdAt(LocalDateTime.now())
+                    .modifiedAt(LocalDateTime.now())
                     .build();
         }
         Item savedItem = itemRepository.save(item);

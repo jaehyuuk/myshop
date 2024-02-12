@@ -29,7 +29,7 @@ public class ItemController {
         return ResponseEntity.ok(itemDetailDto);
     }
 
-    @GetMapping("/{itemId}/stock")
+    @GetMapping("/stock/{itemId}")
     public ResponseEntity<Integer> getItemStockQuantity(@PathVariable Long itemId) {
         int stockQuantity = itemService.getItemStockQuantity(itemId);
         return ResponseEntity.ok(stockQuantity);

@@ -10,7 +10,7 @@ public class CreateItemDto {
     private String content;
     private int price;
     private int stockQuantity;
-    private String type; // "REGULAR" 또는 "RESERVED"
+    private String type; // "GENERAL" 또는 "RESERVED"
     private LocalDateTime reservationStart;
     private LocalDateTime reservationEnd;
 }
