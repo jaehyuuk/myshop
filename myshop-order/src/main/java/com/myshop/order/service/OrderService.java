@@ -92,7 +92,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderDto> getOrders() {
-        List<Order> orders = orderRepository.findAll();
+        List<Order> orders = orderRepository.findAllWithItems();
         return orders.stream().map(OrderDto::of).collect(Collectors.toList());
     }
 
