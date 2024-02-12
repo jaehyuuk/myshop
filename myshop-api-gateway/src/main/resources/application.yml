@@ -16,7 +16,6 @@ spring:
 
   cloud:
     gateway:
-      # 공통 필터는 아래와 같이 작성
       default-filters:
         - name: GlobalFilter
           args:
@@ -60,3 +59,13 @@ spring:
           uri: lb://POST-SERVICE
           predicates:
             - Path=/api/posts/**
+
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/items/**
+
+        - id: order-service
+          uri: lb://ORDER-SERVICE
+          predicates:
+            - Path=/api/orders/**
