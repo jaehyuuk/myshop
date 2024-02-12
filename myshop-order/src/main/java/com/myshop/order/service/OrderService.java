@@ -30,18 +30,25 @@ public class OrderService {
     @Transactional
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findByUserId(userId);
-        Order order = Order.builder()
-                .user(user)
-                .status(OrderStatus.PREPARATION) // 주문 상태를 준비 상태로 설정
-                .build();
+        Order order = createOrder(user);
+        addOrderItemsToOrder(order, orderItemDtos);
+        Order savedOrder = orderRepository.save(order);
+        return savedOrder.getId();
+    }
 
+    private Order createOrder(User user) {
+        return Order.builder()
+                .user(user)
+                .status(OrderStatus.PREPARATION)
+                .build();
+    }
+
+    private void addOrderItemsToOrder(Order order, List<CreateOrderItemDto> orderItemDtos) {
         for (CreateOrderItemDto dto : orderItemDtos) {
             Item item = findByItemId(dto.getItemId());
             OrderItem orderItem = dto.toEntity(item);
             order.addOrderItem(orderItem);
         }
-        orderRepository.save(order);
-        return order.getId();
     }
 
     @Async
@@ -59,7 +66,6 @@ public class OrderService {
             orderRepository.save(order);
             return CompletableFuture.completedFuture(order.getStatus());
         } catch (Exception ex) {
-            // 예외 로깅 또는 처리
             System.out.println("Error processing order: " + ex.getMessage());
             return CompletableFuture.failedFuture(ex);
         }
@@ -74,20 +80,25 @@ public class OrderService {
     }
 
     @Transactional
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(Long userId, Long orderId) {
         Order order = findByOrderId(orderId);
+        validateUser(order, userId);
         order.cancel();
     }
 
     @Transactional
-    public void removeOrderItem(Long orderId, Long orderItemId) {
+    public void removeOrderItem(Long userId, Long orderId, Long orderItemId) {
         Order order = findByOrderId(orderId);
-        OrderItem orderItemToRemove = order.getOrderItems().stream()
+        validateUser(order, userId);
+        OrderItem orderItemToRemove = findOrderItemById(order, orderItemId);
+        order.removeOrderItem(orderItemToRemove);
+    }
+
+    private OrderItem findOrderItemById(Order order, Long orderItemId) {
+        return order.getOrderItems().stream()
                 .filter(orderItem -> orderItem.getId().equals(orderItemId))
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException("주문 목록이 존재하지 않습니다."));
-
-        order.removeOrderItem(orderItemToRemove);
     }
 
     @Transactional(readOnly = true)
@@ -120,4 +131,9 @@ public class OrderService {
         );
     }
 
+    private void validateUser(Order order, Long userId) {
+        if (!order.getUser().getId().equals(userId)) {
+            throw new BadRequestException("주문 취소 권한이 없습니다.");
+        }
+    }
 }

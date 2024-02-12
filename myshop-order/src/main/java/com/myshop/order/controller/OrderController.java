@@ -48,13 +48,15 @@ public class OrderController {
 
     @PostMapping("/cancel/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
-        orderService.cancelOrder(orderId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        orderService.cancelOrder(userId, orderId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{orderId}/items/{orderItemId}")
     public ResponseEntity<?> removeOrderItem(@PathVariable Long orderId, @PathVariable Long orderItemId) {
-        orderService.removeOrderItem(orderId, orderItemId);
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        orderService.removeOrderItem(userId, orderId, orderItemId);
         return ResponseEntity.ok().build();
     }
 
