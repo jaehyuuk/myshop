@@ -35,15 +35,31 @@ public class Order extends BaseTimeEntity {
         this.status = status;
     }
 
+    // 주문 상태를 업데이트하는 도메인 로직
+    public void updateStatus(OrderStatus newStatus) {
+        this.status = newStatus;
+    }
+
+    // 결제 처리 로직
+    public void processPayment() {
+        boolean paymentSuccess = Math.random() < 0.8; // 80%만 결제 성공
+        if (paymentSuccess) {
+            updateStatus(OrderStatus.ORDER);
+        } else {
+            updateStatus(OrderStatus.FAIL);
+        }
+    }
+
     public void cancel() {
         this.status = OrderStatus.CANCEL;
         for (OrderItem orderItem : orderItems) {
-            orderItem.getItem().addStock(orderItem.getCount()); // 각 주문 항목에 대해 재고 원복
+            orderItem.getItem().addStock(orderItem.getCount());
         }
     }
 
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
+        orderItem.getItem().removeStock(orderItem.getCount()); // 주문 항목 추가 시 재고 감소
         if (orderItem.getOrder() != this) {
             orderItem.changeOrder(this);
         }
@@ -51,6 +67,7 @@ public class Order extends BaseTimeEntity {
 
     public void removeOrderItem(OrderItem orderItem) {
         this.orderItems.remove(orderItem);
+        orderItem.getItem().addStock(orderItem.getCount()); // 주문 항목 제거 시 재고 추가
         if (orderItem.getOrder() == this) {
             orderItem.changeOrder(null);
         }

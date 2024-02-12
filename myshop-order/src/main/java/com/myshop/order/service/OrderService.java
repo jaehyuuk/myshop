@@ -26,11 +26,11 @@ public class OrderService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long createOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
+    public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findByUserId(userId);
         Order order = Order.builder()
                 .user(user)
-                .status(OrderStatus.ORDER)
+                .status(OrderStatus.PREPARATION) // 주문 상태를 준비 상태로 설정
                 .build();
 
         for (CreateOrderItemDto dto : orderItemDtos) {
@@ -40,6 +40,24 @@ public class OrderService {
         }
         orderRepository.save(order);
         return order.getId();
+    }
+
+    @Transactional
+    public void completeOrder(Long orderId) {
+        Order order = findByOrderId(orderId);
+        order.processPayment();
+        if (order.getStatus() == OrderStatus.FAIL) {
+            throw new BadRequestException("결제 요청 실패");
+        }
+        orderRepository.save(order);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderDto> getUserOrders(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orders.stream()
+                .map(OrderDto::of)
+                .collect(Collectors.toList());
     }
 
     @Transactional

@@ -17,12 +17,26 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public Long createOrder(@RequestBody List<CreateOrderItemDto> dtos) {
+    public ResponseEntity<Long> enterPayment(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
         Long userId = AuthenticationUtils.getUserIdByToken();
-        return orderService.createOrder(userId, dtos);
+        Long orderId = orderService.prepareOrder(userId, orderItemDtos);
+        return ResponseEntity.ok(orderId);
     }
 
-    @PostMapping("/{orderId}/cancel")
+    @PostMapping("/pay/{orderId}")
+    public ResponseEntity<?> completePayment(@PathVariable Long orderId) {
+        orderService.completeOrder(orderId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<List<OrderDto>> getUserOrders() {
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        List<OrderDto> orders = orderService.getUserOrders(userId);
+        return ResponseEntity.ok(orders);
+    }
+
+    @PostMapping("/cancel/{orderId}")
     public ResponseEntity<?> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.ok().build();
@@ -35,8 +49,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<OrderDto> getOrders() {
-        return orderService.getOrders();
+    public ResponseEntity<List<OrderDto>> getOrders() {
+        List<OrderDto> orders = orderService.getOrders();
+        return ResponseEntity.ok(orders);
     }
-
 }
