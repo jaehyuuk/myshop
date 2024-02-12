@@ -46,10 +46,10 @@ public class OrderService {
     public void completeOrder(Long orderId) {
         Order order = findByOrderId(orderId);
         order.processPayment();
+        orderRepository.saveAndFlush(order);
         if (order.getStatus() == OrderStatus.FAIL) {
             throw new BadRequestException("결제 요청 실패");
         }
-        orderRepository.save(order);
     }
 
     @Transactional(readOnly = true)
@@ -81,6 +81,12 @@ public class OrderService {
     public List<OrderDto> getOrders() {
         List<Order> orders = orderRepository.findAll();
         return orders.stream().map(OrderDto::of).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        Order order = findByOrderId(orderId);
+        orderRepository.delete(order);
     }
 
     private User findByUserId(Long userId) {
