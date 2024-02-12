@@ -23,8 +23,8 @@ public class ItemController {
         return itemService.getAllItems();
     }
 
-    @GetMapping("/{item_id}")
-    public ResponseEntity<ItemDetailDto> getItemById(@PathVariable("item_id") Long itemId) {
+    @GetMapping("/{itemId}")
+    public ResponseEntity<ItemDetailDto> getItemById(@PathVariable("itemId") Long itemId) {
         ItemDetailDto itemDetailDto = itemService.getItemById(itemId);
         return ResponseEntity.ok(itemDetailDto);
     }
@@ -48,8 +48,8 @@ public class ItemController {
         return ResponseEntity.ok(updatedItemDetailDto);
     }
 
-    @DeleteMapping("/{item_id}")
-    public ResponseEntity<Void> deleteItem(@PathVariable("item_id") Long itemId) {
+    @DeleteMapping("/{itemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable("itemId") Long itemId) {
         itemService.deleteItem(itemId);
         return ResponseEntity.noContent().build();
     }
