@@ -39,6 +39,11 @@ public abstract class Item {
         if(itemDto.getPrice() != null) this.price = itemDto.getPrice();
         if(itemDto.getStockQuantity() != null) this.stockQuantity = itemDto.getStockQuantity();
         this.modifiedAt = LocalDateTime.now();
+
+        if (this instanceof ReservedItem) {
+            ReservedItem reserved = (ReservedItem) this;
+            reserved.updateReservationTimes(itemDto.getReservationStart(), itemDto.getReservationEnd());
+        }
     }
 
     // stock 증가

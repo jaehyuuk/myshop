@@ -21,9 +21,11 @@ public class ReservedItem extends Item {
     @Column(name = "reservation_end")
     private LocalDateTime reservationEnd;
 
-    public void updateReservationTimes(LocalDateTime start, LocalDateTime end) {
-        this.reservationStart = start;
-        this.reservationEnd = end;
+    public void updateReservationTimes(LocalDateTime reservationStart, LocalDateTime reservationEnd) {
+        if (reservationStart != null && reservationEnd != null) {
+            this.reservationStart = reservationStart;
+            this.reservationEnd = reservationEnd;
+        }
     }
 
     public boolean isReservationActive() {

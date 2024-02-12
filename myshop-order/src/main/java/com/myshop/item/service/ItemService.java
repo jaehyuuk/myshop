@@ -42,44 +42,41 @@ public class ItemService {
 
     @Transactional
     public ItemDetailDto createItem(CreateItemDto dto, boolean isReserved) {
-        Item item;
-        if (isReserved) {
-            item = ReservedItem.builder()
-                    .name(dto.getName())
-                    .content(dto.getContent())
-                    .price(dto.getPrice())
-                    .stockQuantity(dto.getStockQuantity())
-                    .reservationStart(dto.getReservationStart())
-                    .reservationEnd(dto.getReservationEnd())
-                    .createdAt(LocalDateTime.now())
-                    .modifiedAt(LocalDateTime.now())
-                    .build();
-        } else {
-            item = GeneralItem.builder()
-                    .name(dto.getName())
-                    .content(dto.getContent())
-                    .price(dto.getPrice())
-                    .stockQuantity(dto.getStockQuantity())
-                    .createdAt(LocalDateTime.now())
-                    .modifiedAt(LocalDateTime.now())
-                    .build();
-        }
+        Item item = isReserved ? createReservedItem(dto) : createGeneralItem(dto);
         Item savedItem = itemRepository.save(item);
         return ItemDetailDto.of(savedItem);
+    }
+
+    private ReservedItem createReservedItem(CreateItemDto dto) {
+        return ReservedItem.builder()
+                .name(dto.getName())
+                .content(dto.getContent())
+                .price(dto.getPrice())
+                .stockQuantity(dto.getStockQuantity())
+                .reservationStart(dto.getReservationStart())
+                .reservationEnd(dto.getReservationEnd())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build();
+    }
+
+    private GeneralItem createGeneralItem(CreateItemDto dto) {
+        return GeneralItem.builder()
+                .name(dto.getName())
+                .content(dto.getContent())
+                .price(dto.getPrice())
+                .stockQuantity(dto.getStockQuantity())
+                .createdAt(LocalDateTime.now())
+                .modifiedAt(LocalDateTime.now())
+                .build();
     }
 
     @Transactional
     public ItemDetailDto updateItem(Long itemId, UpdateItemDto updateItemDto) {
         Item item = findByItemId(itemId);
         item.updateItem(updateItemDto);
-
-        if (item instanceof ReservedItem) {
-            ReservedItem reservedItem = (ReservedItem) item;
-            if (updateItemDto.getReservationStart() != null && updateItemDto.getReservationEnd() != null) {
-                reservedItem.updateReservationTimes(updateItemDto.getReservationStart(), updateItemDto.getReservationEnd());
-            }
-        }
-        return ItemDetailDto.of(itemRepository.save(item));
+        Item savedItem = itemRepository.save(item);
+        return ItemDetailDto.of(savedItem);
     }
 
     @Transactional
