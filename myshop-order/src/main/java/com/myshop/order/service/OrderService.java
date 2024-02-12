@@ -2,6 +2,7 @@ package com.myshop.order.service;
 
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.item.domain.Item;
+import com.myshop.item.domain.ReservedItem;
 import com.myshop.item.repository.ItemRepository;
 import com.myshop.order.domain.Order;
 import com.myshop.order.domain.OrderItem;
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -46,8 +48,19 @@ public class OrderService {
     private void addOrderItemsToOrder(Order order, List<CreateOrderItemDto> orderItemDtos) {
         for (CreateOrderItemDto dto : orderItemDtos) {
             Item item = findByItemId(dto.getItemId());
+            if (item instanceof ReservedItem) {
+                ReservedItem reservedItem = (ReservedItem) item;
+                validateReservedItem(reservedItem);
+            }
             OrderItem orderItem = dto.toEntity(item);
             order.addOrderItem(orderItem);
+        }
+    }
+
+    private void validateReservedItem(ReservedItem reservedItem) {
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(reservedItem.getReservationStart()) || now.isAfter(reservedItem.getReservationEnd())) {
+            throw new IllegalStateException("예약 가능한 시간이 아닙니다.");
         }
     }
 
