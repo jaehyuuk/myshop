@@ -28,7 +28,7 @@ public class JwtTokenProvider {
 
     @Value("${jwt.secret}")
     private String SECRET_KEY;
-    private final long tokenValidTime = 30 * 60 * 1000L; //토큰 유효시간 -> 30분
+    private final long tokenValidTime = 60 * 60 * 1000L; //토큰 유효시간 -> 60분
 
     private final UserDetailsServiceImpl userDetailsService;
     private final RedisTemplate<String, String> redisTemplate;

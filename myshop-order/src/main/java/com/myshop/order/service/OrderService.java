@@ -12,10 +12,12 @@ import com.myshop.order.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,13 +44,24 @@ public class OrderService {
         return order.getId();
     }
 
-    @Transactional
-    public void completeOrder(Long orderId) {
-        Order order = findByOrderId(orderId);
-        order.processPayment();
-        orderRepository.saveAndFlush(order);
-        if (order.getStatus() == OrderStatus.FAIL) {
-            throw new BadRequestException("결제 요청 실패");
+    @Async
+    public CompletableFuture<OrderStatus> processOrderAsync(Long orderId) {
+        try {
+            Order order = findByOrderId(orderId);
+
+            boolean paymentSuccess = Math.random() < 0.8; // 80% 확률로 결제 성공
+
+            if (!paymentSuccess) {
+                order.updateStatus(OrderStatus.FAIL);
+            } else {
+                order.updateStatus(OrderStatus.ORDER);
+            }
+            orderRepository.save(order);
+            return CompletableFuture.completedFuture(order.getStatus());
+        } catch (Exception ex) {
+            // 예외 로깅 또는 처리
+            System.out.println("Error processing order: " + ex.getMessage());
+            return CompletableFuture.failedFuture(ex);
         }
     }
 

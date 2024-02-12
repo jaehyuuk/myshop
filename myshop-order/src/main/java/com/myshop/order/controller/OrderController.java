@@ -1,6 +1,8 @@
 package com.myshop.order.controller;
 
 import com.myshop.global.utils.AuthenticationUtils;
+import com.myshop.global.utils.SuccessResponse;
+import com.myshop.order.domain.OrderStatus;
 import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
 import com.myshop.order.service.OrderService;
@@ -9,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -24,9 +28,15 @@ public class OrderController {
     }
 
     @PostMapping("/pay/{orderId}")
-    public ResponseEntity<?> completePayment(@PathVariable Long orderId) {
-        orderService.completeOrder(orderId);
-        return ResponseEntity.ok().build();
+    public CompletableFuture<?> processOrder(@PathVariable Long orderId) {
+        return orderService.processOrderAsync(orderId)
+                .thenApply(orderStatus -> {
+                    return Map.of("orderId", orderId, "status", orderStatus);
+                })
+                .exceptionally(ex -> {
+                    System.out.println("Order processing failed: " + ex.getMessage());
+                    return Map.of("error", "Order processing failed", "message", ex.getMessage());
+                });
     }
 
     @GetMapping("/user")

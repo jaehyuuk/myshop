@@ -35,19 +35,8 @@ public class Order extends BaseTimeEntity {
         this.status = status;
     }
 
-    // 주문 상태를 업데이트하는 도메인 로직
     public void updateStatus(OrderStatus newStatus) {
         this.status = newStatus;
-    }
-
-    // 결제 처리 로직
-    public void processPayment() {
-        boolean paymentSuccess = Math.random() < 0.8; // 80%만 결제 성공
-        if (paymentSuccess) {
-            updateStatus(OrderStatus.ORDER);
-        } else {
-            updateStatus(OrderStatus.FAIL);
-        }
     }
 
     public void cancel() {
