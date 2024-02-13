@@ -69,6 +69,12 @@ public class OrderService {
         try {
             Order order = findByOrderId(orderId);
 
+            // 이미 Order 상태인 경우 처리를 중단하고 에러 메시지를 로그에 출력
+            if (order.getStatus() == OrderStatus.ORDER) {
+                System.out.println("Order processing aborted: Order is already in ORDER status.");
+                return CompletableFuture.completedFuture(order.getStatus());
+            }
+
             boolean paymentSuccess = Math.random() < 0.8; // 80% 확률로 결제 성공
 
             if (!paymentSuccess) {
