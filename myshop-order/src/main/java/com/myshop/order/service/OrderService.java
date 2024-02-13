@@ -13,6 +13,7 @@ import com.myshop.order.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -29,13 +31,18 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    @Transactional
-    public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
-        User user = findByUserId(userId);
-        Order order = createOrder(user);
-        addOrderItemsToOrder(order, orderItemDtos);
-        Order savedOrder = orderRepository.save(order);
-        return savedOrder.getId();
+    @Async
+    public CompletableFuture<Long> prepareOrderAsync(Long userId, List<CreateOrderItemDto> orderItemDtos) {
+        try {
+            User user = findByUserId(userId);
+            Order order = createOrder(user);
+            addOrderItemsToOrder(order, orderItemDtos);
+            Order savedOrder = orderRepository.save(order);
+            return CompletableFuture.completedFuture(savedOrder.getId());
+        } catch (Exception e) {
+            log.error("Error processing order: {}", e.getMessage(), e);
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private Order createOrder(User user) {
@@ -68,27 +75,29 @@ public class OrderService {
     public CompletableFuture<OrderStatus> processOrderAsync(Long orderId) {
         try {
             Order order = findByOrderId(orderId);
-
-            // 이미 Order 상태인 경우 처리를 중단하고 에러 메시지를 로그에 출력
             if (order.getStatus() == OrderStatus.ORDER) {
-                System.out.println("Order processing aborted: Order is already in ORDER status.");
+                log.info("already Order");
                 return CompletableFuture.completedFuture(order.getStatus());
             }
-
-            boolean paymentSuccess = Math.random() < 0.8; // 80% 확률로 결제 성공
-
-            if (!paymentSuccess) {
-                order.updateStatus(OrderStatus.FAIL);
-            } else {
-                order.updateStatus(OrderStatus.ORDER);
-            }
-            orderRepository.save(order);
-            return CompletableFuture.completedFuture(order.getStatus());
-        } catch (Exception ex) {
-            System.out.println("Error processing order: " + ex.getMessage());
-            return CompletableFuture.failedFuture(ex);
+            return orderPayAndUpdateStatus(order);
+        } catch (Exception e) {
+            log.error("Error processing order: {}", e.getMessage(), e);
+            return CompletableFuture.failedFuture(e);
         }
     }
+
+    private CompletableFuture<OrderStatus> orderPayAndUpdateStatus(Order order) {
+        boolean paymentSuccess = Math.random() < 0.8; // 80% 확률로 결제 성공
+
+        if (!paymentSuccess) {
+            order.updateStatus(OrderStatus.FAIL);
+        } else {
+            order.updateStatus(OrderStatus.ORDER);
+        }
+        orderRepository.save(order);
+        return CompletableFuture.completedFuture(order.getStatus());
+    }
+
 
     @Transactional(readOnly = true)
     public List<OrderDto> getUserOrders(Long userId) {

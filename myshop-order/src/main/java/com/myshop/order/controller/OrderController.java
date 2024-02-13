@@ -7,6 +7,7 @@ import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
 import com.myshop.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -21,20 +23,18 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<Long> enterPayment(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
+    public CompletableFuture<ResponseEntity<Long>> enterPayment(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
         Long userId = AuthenticationUtils.getUserIdByToken();
-        Long orderId = orderService.prepareOrder(userId, orderItemDtos);
-        return ResponseEntity.ok(orderId);
+        return orderService.prepareOrderAsync(userId, orderItemDtos)
+                .thenApply(orderId -> ResponseEntity.ok(orderId));
     }
 
     @PostMapping("/pay/{orderId}")
     public CompletableFuture<?> processOrder(@PathVariable Long orderId) {
         return orderService.processOrderAsync(orderId)
-                .thenApply(orderStatus -> {
-                    return Map.of("orderId", orderId, "status", orderStatus);
-                })
+                .thenApply(orderStatus -> Map.of("orderId", orderId, "status", orderStatus))
                 .exceptionally(ex -> {
-                    System.out.println("Order processing failed: " + ex.getMessage());
+                    log.error("Order processing failed: {}", ex.getMessage(), ex);
                     return Map.of("error", "Order processing failed", "message", ex.getMessage());
                 });
     }
