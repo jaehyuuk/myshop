@@ -2,9 +2,6 @@ server:
   port: 8081
 
 spring:
-  profiles:
-    include:
-      - core
   application:
     name: user-service
 
