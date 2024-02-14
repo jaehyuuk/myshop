@@ -2,10 +2,10 @@
 
 import requests
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
 import uuid
 
 # API 엔드포인트 설정
+JOIN_URL = "http://host.docker.internal:8081/api/auth/join"
 LOGIN_URL = "http://host.docker.internal:8081/api/auth/login"
 ORDERS_URL = "http://host.docker.internal:8084/api/orders"
 PAY_URL = "http://host.docker.internal:8084/api/orders/pay/"
@@ -13,19 +13,33 @@ PAY_URL = "http://host.docker.internal:8084/api/orders/pay/"
 # 요청 타임아웃 설정 (초 단위)
 REQUEST_TIMEOUT = 15
 
-# 로그인 함수
-def login():
-    user_info = {
-        "email": "aaa@naver.com",
-        "password": "123123"
+# 고유한 사용자 정보 생성 함수
+def generate_user_info():
+    unique_id = uuid.uuid4()
+    return {
+        "email": f"user_{unique_id}@example.com",
+        "password": "123123",
+        "name": f"user_{unique_id}"
     }
+
+# 회원가입 함수
+def register_user(user_info):
     try:
-        response = requests.post(LOGIN_URL, json=user_info)
+        response = requests.post(JOIN_URL, json=user_info, timeout=REQUEST_TIMEOUT)
+        return response.status_code in [200, 201]
+    except requests.exceptions.Timeout:
+        print(f"Registration timeout for {user_info['email']}")
+        return False
+
+# 로그인 함수
+def login(user_info):
+    try:
+        response = requests.post(LOGIN_URL, json=user_info, timeout=REQUEST_TIMEOUT)
         if response.status_code == 200:
             # 'data' 객체 내부의 'token' 키에 접근하여 토큰 추출
             return response.json()['data']['token']
     except requests.exceptions.Timeout:
-        print("Login timeout for aaa@naver.com")
+        print(f"Login timeout for {user_info['email']}")
     except KeyError:
         print("KeyError: 'token' not found in response")
     return None
@@ -54,20 +68,21 @@ def attempt_payment(token, orderId):
 
 # 메인 함수
 def main():
-    token = login()
-    if token:
-        with ThreadPoolExecutor(max_workers=50) as executor:
-            # 결제 화면 진입 및 주문 생성
-            order_futures = [executor.submit(enter_payment_screen, token) for _ in range(10000)]
-            orderIds = [future.result() for future in as_completed(order_futures) if future.result()]
+    users_count = 10000
+    with ThreadPoolExecutor(max_workers=50) as executor:
+        user_infos = [generate_user_info() for _ in range(users_count)]
+        register_futures = [executor.submit(register_user, user_info) for user_info in user_infos]
+        as_completed(register_futures)
 
-            # 결제 시도 (처음 8000개의 orderId 사용)
-            pay_futures = [executor.submit(attempt_payment, token, orderId) for orderId in orderIds[:8000]]
-            as_completed(pay_futures)
-            print(f"Attempted payments for the first 8000 orders.")
-    else:
-        print("Failed to authenticate user.")
+        login_futures = {executor.submit(login, user_info): user_info for user_info in user_infos}
+        tokens = [future.result() for future in as_completed(login_futures) if future.result()]
+
+        order_futures = [executor.submit(enter_payment_screen, token) for token in tokens]
+        orderIds = [future.result() for future in as_completed(order_futures) if future.result()]
+
+        pay_futures = [executor.submit(attempt_payment, tokens[i], orderId) for i, orderId in enumerate(orderIds[:8000])]
+        as_completed(pay_futures)
+        print(f"Attempted payments for the first 8000 orders.")
 
 if __name__ == "__main__":
     main()
-
