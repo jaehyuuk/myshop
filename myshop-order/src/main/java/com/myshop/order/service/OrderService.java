@@ -31,6 +31,7 @@ public class OrderService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     @Async
     public CompletableFuture<Long> prepareOrderAsync(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         try {
@@ -71,6 +72,7 @@ public class OrderService {
         }
     }
 
+    @Transactional
     @Async
     public CompletableFuture<OrderStatus> processOrderAsync(Long orderId) {
         try {
