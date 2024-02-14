@@ -7,17 +7,21 @@ import com.myshop.global.exception.BadRequestException;
 import com.myshop.item.dto.*;
 import com.myshop.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository itemRepository;
+    private final StringRedisTemplate redisTemplate;
 
     @Transactional(readOnly = true)
     public List<ItemDto> getAllItems() {
@@ -34,7 +38,30 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemStockDto getItemStock(Long itemId) {
         Item item = findByItemId(itemId);
+        saveItemToRedis(item);
         return ItemStockDto.of(item);
+    }
+
+    private void saveItemToRedis(Item item) {
+        String key = "item:" + item.getId();
+        redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(item.getStockQuantity()));
+
+        LocalDateTime reservationStart = null;
+        LocalDateTime reservationEnd = null;
+
+        if (item instanceof ReservedItem) {
+            ReservedItem reservedItem = (ReservedItem) item;
+            reservationStart = reservedItem.getReservationStart();
+            reservationEnd = reservedItem.getReservationEnd();
+        }
+
+        if (reservationStart != null && reservationEnd != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            redisTemplate.opsForHash().put(key, "reservationStart", reservationStart.format(formatter));
+            redisTemplate.opsForHash().put(key, "reservationEnd", reservationEnd.format(formatter));
+        }
+
+        redisTemplate.expire(key, 24, TimeUnit.HOURS);
     }
 
     @Transactional
