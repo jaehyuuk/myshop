@@ -14,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,33 +41,33 @@ public class ItemService {
         return ItemStockDto.of(item);
     }
 
-    private void saveItemToRedis(Item item) {
-        String key = "item:" + item.getId();
-        redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(item.getStockQuantity()));
-
-        LocalDateTime reservationStart = null;
-        LocalDateTime reservationEnd = null;
-
-        if (item instanceof ReservedItem) {
-            ReservedItem reservedItem = (ReservedItem) item;
-            reservationStart = reservedItem.getReservationStart();
-            reservationEnd = reservedItem.getReservationEnd();
-        }
-
-        if (reservationStart != null && reservationEnd != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-            redisTemplate.opsForHash().put(key, "reservationStart", reservationStart.format(formatter));
-            redisTemplate.opsForHash().put(key, "reservationEnd", reservationEnd.format(formatter));
-        }
-
-        redisTemplate.expire(key, 24, TimeUnit.HOURS);
-    }
-
     @Transactional
     public ItemDetailDto createItem(CreateItemDto dto, boolean isReserved) {
         Item item = isReserved ? createReservedItem(dto) : createGeneralItem(dto);
+        saveItemToRedis(item); // redis 저장
         Item savedItem = itemRepository.save(item);
         return ItemDetailDto.of(savedItem);
+    }
+
+    @Transactional
+    public ItemDetailDto updateItem(Long itemId, UpdateItemDto updateItemDto) {
+        Item item = findByItemId(itemId);
+        item.updateItem(updateItemDto);
+        Item savedItem = itemRepository.save(item);
+        return ItemDetailDto.of(savedItem);
+    }
+
+    @Transactional
+    public void deleteItem(Long itemId) {
+        Item item = findByItemId(itemId);
+        deleteItemToRedis(item);
+        itemRepository.deleteById(itemId);
+    }
+
+    private Item findByItemId(Long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(
+                () -> new BadRequestException("상품이 존재하지 않습니다.")
+        );
     }
 
     private ReservedItem createReservedItem(CreateItemDto dto) {
@@ -95,22 +94,30 @@ public class ItemService {
                 .build();
     }
 
-    @Transactional
-    public ItemDetailDto updateItem(Long itemId, UpdateItemDto updateItemDto) {
-        Item item = findByItemId(itemId);
-        item.updateItem(updateItemDto);
-        Item savedItem = itemRepository.save(item);
-        return ItemDetailDto.of(savedItem);
+    private void saveItemToRedis(Item item) {
+        String key = "item:" + item.getId();
+        redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(item.getStockQuantity()));
+
+        LocalDateTime reservationStart = null;
+        LocalDateTime reservationEnd = null;
+
+        if (item instanceof ReservedItem) {
+            ReservedItem reservedItem = (ReservedItem) item;
+            reservationStart = reservedItem.getReservationStart();
+            reservationEnd = reservedItem.getReservationEnd();
+        }
+
+        if (reservationStart != null && reservationEnd != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            redisTemplate.opsForHash().put(key, "reservationStart", reservationStart.format(formatter));
+            redisTemplate.opsForHash().put(key, "reservationEnd", reservationEnd.format(formatter));
+        }
     }
 
-    @Transactional
-    public void deleteItem(Long itemId) {
-        itemRepository.deleteById(itemId);
-    }
-
-    private Item findByItemId(Long itemId) {
-        return itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
+    private void deleteItemToRedis(Item item) {
+        String key = "item:" + item.getId();
+        if (redisTemplate.opsForValue().get(key) != null) {
+            redisTemplate.delete(key);
+        }
     }
 }
