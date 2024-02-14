@@ -4,10 +4,7 @@ import com.myshop.item.domain.Item;
 import com.myshop.item.domain.GeneralItem;
 import com.myshop.item.domain.ReservedItem;
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.item.dto.CreateItemDto;
-import com.myshop.item.dto.ItemDetailDto;
-import com.myshop.item.dto.ItemDto;
-import com.myshop.item.dto.UpdateItemDto;
+import com.myshop.item.dto.*;
 import com.myshop.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,9 +32,9 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public int getItemStockQuantity(Long itemId) {
+    public ItemStockDto getItemStock(Long itemId) {
         Item item = findByItemId(itemId);
-        return item.getStockQuantity();
+        return ItemStockDto.of(item);
     }
 
     @Transactional

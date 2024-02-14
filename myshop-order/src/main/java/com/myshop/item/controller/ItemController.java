@@ -1,9 +1,6 @@
 package com.myshop.item.controller;
 
-import com.myshop.item.dto.CreateItemDto;
-import com.myshop.item.dto.ItemDetailDto;
-import com.myshop.item.dto.ItemDto;
-import com.myshop.item.dto.UpdateItemDto;
+import com.myshop.item.dto.*;
 import com.myshop.item.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,9 +27,9 @@ public class ItemController {
     }
 
     @GetMapping("/stock/{itemId}")
-    public ResponseEntity<Integer> getItemStockQuantity(@PathVariable Long itemId) {
-        int stockQuantity = itemService.getItemStockQuantity(itemId);
-        return ResponseEntity.ok(stockQuantity);
+    public ResponseEntity<ItemStockDto> getItemStock(@PathVariable Long itemId) {
+        ItemStockDto itemStockDto = itemService.getItemStock(itemId);
+        return ResponseEntity.ok(itemStockDto);
     }
 
     @PostMapping
