@@ -61,7 +61,9 @@ public class PostService {
                 .orElse(null);
 
         if (like != null) {
-            deleteNotificationsForLike(post, like);
+            post.removeLike(like);
+            likeRepository.delete(like);
+            deleteNotificationsForLike(like);
         } else {
             addLikeAndNotification(user, post);
         }
@@ -166,9 +168,7 @@ public class PostService {
                 .block();
     }
 
-    private void deleteNotificationsForLike(Post post, Like like) {
-        post.removeLike(like);
-        likeRepository.delete(like);
+    private void deleteNotificationsForLike(Like like) {
         webClient.delete()
                 .uri("http://localhost:8082/api/internal/feeds/notis/type/" + like.getId())
                 .retrieve()
