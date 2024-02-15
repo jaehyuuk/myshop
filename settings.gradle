@@ -1,9 +1,9 @@
 rootProject.name = 'myshop'
 include 'myshop-core'
-include 'myshop-user'
-include 'myshop-activity'
-include 'myshop-newsfeed'
+include 'myshop-user-service'
+include 'myshop-post-service'
+include 'myshop-feed-service'
 include 'myshop-eureka-server'
 include 'myshop-api-gateway'
-include 'myshop-order'
+include 'myshop-order-service'
 

@@ -57,7 +57,7 @@ project(':myshop-core') {
 	jar { enabled = true }
 }
 
-project(':myshop-user') {
+project(':myshop-user-service') {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -65,7 +65,7 @@ project(':myshop-user') {
 	}
 }
 
-project(':myshop-activity') {
+project(':myshop-post-service') {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -73,7 +73,7 @@ project(':myshop-activity') {
 	}
 }
 
-project(':myshop-newsfeed') {
+project(':myshop-feed-service') {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -81,7 +81,7 @@ project(':myshop-newsfeed') {
 	}
 }
 
-project(':myshop-order') {
+project(':myshop-order-service') {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		implementation 'org.springframework.boot:spring-boot-starter-security'
