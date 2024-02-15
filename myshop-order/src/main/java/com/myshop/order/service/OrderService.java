@@ -89,10 +89,10 @@ public class OrderService {
     }
 
     private CompletableFuture<OrderStatus> orderPayAndUpdateStatus(Order order) {
-        boolean paymentSuccess = Math.random() < 0.8; // 80% 확률로 결제 성공
+        boolean paymentSuccess = Math.random() < 0.8; // 결제 이탈율 20%
 
         if (!paymentSuccess) {
-            order.updateStatus(OrderStatus.FAIL);
+            order.cancel();
         } else {
             order.updateStatus(OrderStatus.ORDER);
         }
