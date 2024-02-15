@@ -44,8 +44,8 @@ public class ItemService {
     @Transactional
     public ItemDetailDto createItem(CreateItemDto dto, boolean isReserved) {
         Item item = isReserved ? createReservedItem(dto) : createGeneralItem(dto);
-        saveItemToRedis(item); // redis 저장
         Item savedItem = itemRepository.save(item);
+        saveItemToRedis(savedItem); // redis 저장
         return ItemDetailDto.of(savedItem);
     }
 

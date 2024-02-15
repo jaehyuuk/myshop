@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import pytz
-import redis
 from apscheduler.schedulers.background import BackgroundScheduler
+import redis
 import time
 import logging
 
@@ -14,12 +14,12 @@ redis_client = redis.Redis(host='host.docker.internal', port=6379, db=0)
 # Asia/Seoul 시간대 설정
 seoul_timezone = pytz.timezone('Asia/Seoul')
 
-# 전역 변수로 scheduler 선언
-scheduler = BackgroundScheduler()
+# 전역 변수로 scheduler 선언, 시간대를 Asia/Seoul로 설정
+scheduler = BackgroundScheduler(timezone=seoul_timezone)
 
 def notify_stock(event_type, item_id):
-    # Redis에서 아이템의 재고 수량 조회
-    current_time = datetime.now(seoul_timezone).strftime('%Y-%m-%d %H:%M:%S')
+    # 현재 시간을 Asia/Seoul 기준으로 출력 (단지 로깅 목적)
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     stock_quantity = redis_client.hget(f"item:{item_id}", "stockQuantity").decode('utf-8')
     print(f"[{current_time}] {event_type} - Item ID: {item_id}, Stock Quantity: {stock_quantity}")
 
@@ -31,7 +31,6 @@ def list_initial_stock():
         print(f"Item ID: {item_id}, Initial Stock Quantity: {stock_quantity}")
 
 def schedule_stock_checks():
-    # scheduler를 전역 변수로 사용
     global scheduler
     scheduler.start()
 
@@ -39,26 +38,30 @@ def schedule_stock_checks():
         item_id = key.decode().split(":")[1]
         item_info = redis_client.hgetall(key)
         
-        reservation_start_str = item_info[b'reservationStart'].decode()
-        reservation_end_str = item_info[b'reservationEnd'].decode()
-        
-        reservation_start = datetime.fromisoformat(reservation_start_str).astimezone(seoul_timezone)
-        reservation_end = datetime.fromisoformat(reservation_end_str).astimezone(seoul_timezone)
+        if b'reservationStart' in item_info and b'reservationEnd' in item_info:
+            reservation_start_str = item_info[b'reservationStart'].decode()
+            reservation_end_str = item_info[b'reservationEnd'].decode()
+            
+            # 문자열을 datetime 객체로 변환 (시간대 변환 없이 직접 사용)
+            reservation_start = datetime.strptime(reservation_start_str, '%Y-%m-%dT%H:%M:%S')
+            reservation_end = datetime.strptime(reservation_end_str, '%Y-%m-%dT%H:%M:%S')
+            
+            # 예약 시작 10분 전 계산
+            start_check_time = reservation_start - timedelta(minutes=10)
 
-        # 예약 시작 10분 전에 재고 확인 스케줄링
-        start_check_time = reservation_start - timedelta(minutes=10)
-        scheduler.add_job(notify_stock, 'date', run_date=start_check_time, args=["Reservation Start", item_id])
+            # 예약 종료 시간에 대한 처리도 포함
+            end_check_time = reservation_end
 
-        # 예약 종료 시간에 재고 확인 스케줄링
-        scheduler.add_job(notify_stock, 'date', run_date=reservation_end, args=["Reservation End", item_id])
+            # 스케줄러에 작업 추가 (시간대 변환 없이 직접 사용)
+            scheduler.add_job(notify_stock, 'date', run_date=start_check_time, args=["Reservation Start", item_id], misfire_grace_time=300)  # 5분의 유예 시간
+            scheduler.add_job(notify_stock, 'date', run_date=end_check_time, args=["Reservation End", item_id], misfire_grace_time=300)
 
 if __name__ == "__main__":
-    list_initial_stock()  # 초기 재고 나열
-    schedule_stock_checks()  # 예약 시작 10분 전과 종료 후에 재고 확인 스케줄링
+    list_initial_stock()
+    schedule_stock_checks()
 
     try:
-        # 무한 루프를 사용하여 메인 스레드가 종료되지 않도록 유지
         while True:
             time.sleep(1)
     except (KeyboardInterrupt, SystemExit):
-        scheduler.shutdown()  # 스케줄러 종료
+        scheduler.shutdown()
