@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +29,6 @@ public class NewsFeedService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final NotificationRepository notificationRepository;
-    private final WebClient webClient;
 
     @Transactional
     public void follow(Long userId, Long followingId) {
