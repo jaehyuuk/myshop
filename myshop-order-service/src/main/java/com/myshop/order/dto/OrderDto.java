@@ -1,7 +1,7 @@
 package com.myshop.order.dto;
 
-import com.myshop.order.domain.Order;
-import com.myshop.order.domain.OrderStatus;
+import com.myshop.domain.Order;
+import com.myshop.domain.OrderStatus;
 import lombok.Builder;
 import lombok.Getter;
 

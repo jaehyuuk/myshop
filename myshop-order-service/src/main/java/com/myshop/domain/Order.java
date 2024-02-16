@@ -1,4 +1,4 @@
-package com.myshop.order.domain;
+package com.myshop.domain;
 
 import com.myshop.global.entity.BaseTimeEntity;
 import com.myshop.user.domain.User;

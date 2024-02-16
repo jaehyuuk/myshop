@@ -1,12 +1,12 @@
 package com.myshop.order.service;
 
 import com.myshop.global.exception.BadRequestException;
-import com.myshop.item.domain.Item;
-import com.myshop.item.domain.ReservedItem;
+import com.myshop.domain.item.Item;
+import com.myshop.domain.item.ReservedItem;
 import com.myshop.item.repository.ItemRepository;
-import com.myshop.order.domain.Order;
-import com.myshop.order.domain.OrderItem;
-import com.myshop.order.domain.OrderStatus;
+import com.myshop.domain.Order;
+import com.myshop.domain.OrderItem;
+import com.myshop.domain.OrderStatus;
 import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
 import com.myshop.order.repository.OrderRepository;

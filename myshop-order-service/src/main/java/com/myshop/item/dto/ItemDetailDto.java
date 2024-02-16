@@ -1,9 +1,9 @@
 package com.myshop.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.myshop.item.domain.Item;
-import com.myshop.item.domain.GeneralItem;
-import com.myshop.item.domain.ReservedItem;
+import com.myshop.domain.item.Item;
+import com.myshop.domain.item.GeneralItem;
+import com.myshop.domain.item.ReservedItem;
 import lombok.Builder;
 import lombok.Getter;
 

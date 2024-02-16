@@ -1,8 +1,8 @@
 package com.myshop.order.dto;
 
-import com.myshop.item.domain.GeneralItem;
-import com.myshop.item.domain.ReservedItem;
-import com.myshop.order.domain.OrderItem;
+import com.myshop.domain.item.GeneralItem;
+import com.myshop.domain.item.ReservedItem;
+import com.myshop.domain.OrderItem;
 import lombok.Builder;
 import lombok.Getter;
 

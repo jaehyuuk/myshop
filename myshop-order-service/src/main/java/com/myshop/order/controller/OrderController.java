@@ -1,8 +1,6 @@
 package com.myshop.order.controller;
 
 import com.myshop.global.utils.AuthenticationUtils;
-import com.myshop.global.utils.SuccessResponse;
-import com.myshop.order.domain.OrderStatus;
 import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
 import com.myshop.order.service.OrderService;

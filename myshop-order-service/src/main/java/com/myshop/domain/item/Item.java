@@ -1,4 +1,4 @@
-package com.myshop.item.domain;
+package com.myshop.domain.item;
 
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.item.dto.UpdateItemDto;

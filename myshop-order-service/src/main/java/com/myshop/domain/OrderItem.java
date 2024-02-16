@@ -1,6 +1,6 @@
-package com.myshop.order.domain;
+package com.myshop.domain;
 
-import com.myshop.item.domain.Item;
+import com.myshop.domain.item.Item;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
