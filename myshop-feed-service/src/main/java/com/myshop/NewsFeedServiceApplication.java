@@ -12,10 +12,10 @@ import java.util.TimeZone;
 @Import(JpaAuditingConfig.class)
 @EnableDiscoveryClient
 @SpringBootApplication
-public class FeedApplication {
+public class NewsFeedServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(FeedApplication.class, args);
+		SpringApplication.run(NewsFeedServiceApplication.class, args);
 	}
 
 	@PostConstruct
