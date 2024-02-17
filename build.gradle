@@ -88,3 +88,11 @@ project(':myshop-order-service') {
 		implementation project(':myshop-core')
 	}
 }
+
+project(':myshop-stock-service') {
+	dependencies {
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+		implementation 'org.springframework.boot:spring-boot-starter-security'
+		implementation project(':myshop-core')
+	}
+}

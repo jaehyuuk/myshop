@@ -6,4 +6,5 @@ include 'myshop-feed-service'
 include 'myshop-eureka-server'
 include 'myshop-api-gateway'
 include 'myshop-order-service'
+include 'myshop-stock-service'
 
