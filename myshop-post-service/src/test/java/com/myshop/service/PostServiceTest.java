@@ -3,7 +3,6 @@ package com.myshop.service;
 import com.myshop.domain.Comment;
 import com.myshop.domain.Like;
 import com.myshop.domain.Post;
-import com.myshop.global.dto.CreateNotificationDto;
 import com.myshop.user.domain.User;
 import com.myshop.dto.*;
 import com.myshop.global.exception.BadRequestException;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -322,5 +320,4 @@ class PostServiceTest {
             postService.removeComment(userId, postId, commentId);
         });
     }
-
 }

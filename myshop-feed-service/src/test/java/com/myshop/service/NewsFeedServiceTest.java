@@ -3,8 +3,10 @@ package com.myshop.service;
 import com.myshop.domain.Follow;
 import com.myshop.domain.NotiType;
 import com.myshop.domain.Notification;
+import com.myshop.dto.CreateNewsFeedDto;
+import com.myshop.global.dto.CreateNotificationDto;
+import com.myshop.global.dto.PostResponseDto;
 import com.myshop.user.domain.User;
-import com.myshop.dto.NotificationDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.repository.FollowRepository;
 import com.myshop.repository.NotificationRepository;
@@ -12,13 +14,14 @@ import com.myshop.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -41,41 +44,34 @@ class NewsFeedServiceTest {
     }
 
     @Test
-    @DisplayName("알림 목록 조회 테스트")
-    void getNotisTest() {
+    @DisplayName("뉴스피드 조회 테스트")
+    void getNewsFeedTest() {
         // given
         Long userId = 1L;
-        Long fromUserId = 2L;
+        List<Long> followingIds = List.of(2L, 3L);
 
         User user = User.builder().id(userId).build();
-        User fromUser = User.builder().id(fromUserId).build();
+        List<Follow> follows = followingIds.stream()
+                .map(followingId -> Follow.builder()
+                        .follower(user)
+                        .following(User.builder().id(followingId).build())
+                        .build())
+                .collect(Collectors.toList());
 
-        Notification notification1 = Notification.builder()
-                .type(NotiType.COMMENT)
-                .fromUser(fromUser)
-                .toUser(user)
-                .typeId(1L)
-                .build();
-
-        Notification notification2 = Notification.builder()
-                .type(NotiType.LIKE)
-                .fromUser(fromUser)
-                .toUser(user)
-                .typeId(2L)
-                .build();
-
-        List<Notification> notifications = Arrays.asList(notification1, notification2);
+        List<Notification> notifications = List.of();
+        List<PostResponseDto> posts = List.of();
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(notificationRepository.findByToUserId(userId)).willReturn(notifications);
+        given(followRepository.findByFollowerId(userId)).willReturn(follows);
+        given(notificationRepository.findByFromUserIdIn(followingIds)).willReturn(notifications);
 
         // when
-        List<NotificationDto> result = newsFeedService.getMyNotis(userId);
+        List<CreateNewsFeedDto> newsFeed = newsFeedService.getNewsFeed(userId);
 
         // then
-        assertFalse(result.isEmpty());
-        assertEquals(2, result.size());
+        assertNotNull(newsFeed);
     }
+
 
     @Test
     @DisplayName("존재하지 않는 유저의 알림 조회 시 예외 발생")
@@ -90,57 +86,38 @@ class NewsFeedServiceTest {
         });
     }
 
-
     @Test
-    @DisplayName("다른 사용자 알림 메시지 포맷 테스트")
-    void getNotificationTest() {
+    @DisplayName("알림 생성 테스트")
+    void createNotificationTest() {
         // given
-        User fromUser = User.builder().name("Alice").build();
-        User toUser = User.builder().name("Bob").build();
+        Long fromUserId = 1L;
+        Long toUserId = 2L;
+        String type = NotiType.FOLLOW.name();
+        Long postId = 0L;
+        Long typeId = 10L;
 
-        Notification notification = Notification.builder()
-                .fromUser(fromUser)
-                .toUser(toUser)
-                .type(NotiType.FOLLOW)
-                .build();
+        CreateNotificationDto request = new CreateNotificationDto();
+        request.setFromUserId(fromUserId);
+        request.setToUserId(toUserId);
+        request.setType(type);
+        request.setPostId(postId);
+        request.setTypeId(typeId);
 
         // when
-        NotificationDto notificationDto = NotificationDto.getFollowNotification(notification);
+        newsFeedService.createNotification(request);
 
         // then
-        String expectedMessage = "Alice님이 Bob님을 팔로우합니다.";
-        assertEquals(expectedMessage, notificationDto.getMessage());
-        assertNotNull(notificationDto.getCreatedAt());
+        verify(notificationRepository).mSave(fromUserId, toUserId, type, postId, typeId);
     }
 
-    @Test
-    @DisplayName("현재 사용자 알림 메시지 포맷 테스트")
-    void getMyNotificationTest() {
-        // given
-        User fromUser = User.builder().name("Alice").build();
-
-        Notification notification = Notification.builder()
-                .fromUser(fromUser)
-                .type(NotiType.COMMENT)
-                .typeId(1L)
-                .postId(1L)
-                .build();
-
-        // when
-        NotificationDto notificationDto = NotificationDto.getMyNotification(notification);
-
-        //then
-        String expectedMessage = "Alice님이 당신의 1 포스트에 댓글을 남겼습니다.";
-        assertEquals(expectedMessage, notificationDto.getMessage());
-        assertNotNull(notificationDto.getCreatedAt());
-    }
 
     @Test
-    @DisplayName("팔로우 추가 테스트")
-    void addFollowTest() {
+    @DisplayName("팔로우 생성 테스트")
+    void createNewFollowTest() {
         // given
         Long userId = 1L;
         Long followingId = 2L;
+
         User user = User.builder().id(userId).build();
         User following = User.builder().id(followingId).build();
 
@@ -153,6 +130,7 @@ class NewsFeedServiceTest {
 
         // then
         verify(followRepository).save(any(Follow.class));
+        verify(notificationRepository).mSave(eq(userId), eq(followingId), eq(NotiType.FOLLOW.name()), eq(0L), anyLong());
     }
 
     @Test
