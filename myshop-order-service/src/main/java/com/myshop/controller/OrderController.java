@@ -1,9 +1,11 @@
-package com.myshop.order.controller;
+package com.myshop.controller;
 
+import com.myshop.domain.OrderStatus;
+import com.myshop.dto.PrepareOrderRequest;
 import com.myshop.global.utils.AuthenticationUtils;
-import com.myshop.order.dto.CreateOrderItemDto;
-import com.myshop.order.dto.OrderDto;
-import com.myshop.order.service.OrderService;
+import com.myshop.dto.CreateOrderItemDto;
+import com.myshop.dto.OrderDto;
+import com.myshop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,20 +23,23 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<Long>> enterPayment(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
-        Long userId = AuthenticationUtils.getUserIdByToken();
-        return orderService.prepareOrderAsync(userId, orderItemDtos)
-                .thenApply(orderId -> ResponseEntity.ok(orderId));
+    public ResponseEntity<?> prepareOrder(@RequestBody PrepareOrderRequest request) {
+        try {
+            Long orderId = orderService.prepareOrder(request.getUserId(), request.getOrderItemDtos());
+            return ResponseEntity.ok().body("Order prepared successfully with ID: " + orderId);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error preparing order: " + e.getMessage());
+        }
     }
 
     @PostMapping("/pay/{orderId}")
-    public CompletableFuture<?> processOrder(@PathVariable Long orderId) {
-        return orderService.processOrderAsync(orderId)
-                .thenApply(orderStatus -> Map.of("orderId", orderId, "status", orderStatus))
-                .exceptionally(ex -> {
-                    log.error("Order processing failed: {}", ex.getMessage(), ex);
-                    return Map.of("error", "Order processing failed", "message", ex.getMessage());
-                });
+    public ResponseEntity<?> processOrder(@PathVariable Long orderId) {
+        try {
+            OrderStatus status = orderService.processOrder(orderId);
+            return ResponseEntity.ok().body("Order processed with status: " + status);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error processing order: " + e.getMessage());
+        }
     }
 
     @GetMapping("/user")

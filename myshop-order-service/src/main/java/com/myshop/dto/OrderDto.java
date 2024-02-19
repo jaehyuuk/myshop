@@ -1,4 +1,4 @@
-package com.myshop.order.dto;
+package com.myshop.dto;
 
 import com.myshop.domain.Order;
 import com.myshop.domain.OrderStatus;

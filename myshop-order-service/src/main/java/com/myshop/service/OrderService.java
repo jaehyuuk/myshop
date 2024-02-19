@@ -1,4 +1,4 @@
-package com.myshop.order.service;
+package com.myshop.service;
 
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
@@ -7,20 +7,18 @@ import com.myshop.item.repository.ItemRepository;
 import com.myshop.domain.Order;
 import com.myshop.domain.OrderItem;
 import com.myshop.domain.OrderStatus;
-import com.myshop.order.dto.CreateOrderItemDto;
-import com.myshop.order.dto.OrderDto;
-import com.myshop.order.repository.OrderRepository;
+import com.myshop.dto.CreateOrderItemDto;
+import com.myshop.dto.OrderDto;
+import com.myshop.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,18 +30,12 @@ public class OrderService {
     private final UserRepository userRepository;
 
     @Transactional
-    @Async
-    public CompletableFuture<Long> prepareOrderAsync(Long userId, List<CreateOrderItemDto> orderItemDtos) {
-        try {
-            User user = findByUserId(userId);
-            Order order = createOrder(user);
-            addOrderItemsToOrder(order, orderItemDtos);
-            Order savedOrder = orderRepository.save(order);
-            return CompletableFuture.completedFuture(savedOrder.getId());
-        } catch (Exception e) {
-            log.error("Error processing order: {}", e.getMessage(), e);
-            return CompletableFuture.failedFuture(e);
-        }
+    public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
+        User user = findByUserId(userId);
+        Order order = createOrder(user);
+        addOrderItemsToOrder(order, orderItemDtos);
+        Order savedOrder = orderRepository.save(order);
+        return savedOrder.getId();
     }
 
     private Order createOrder(User user) {
@@ -73,22 +65,15 @@ public class OrderService {
     }
 
     @Transactional
-    @Async
-    public CompletableFuture<OrderStatus> processOrderAsync(Long orderId) {
-        try {
-            Order order = findByOrderId(orderId);
-            if (order.getStatus() == OrderStatus.ORDER) {
-                log.info("already Order");
-                return CompletableFuture.completedFuture(order.getStatus());
-            }
-            return orderPayAndUpdateStatus(order);
-        } catch (Exception e) {
-            log.error("Error processing order: {}", e.getMessage(), e);
-            return CompletableFuture.failedFuture(e);
+    public OrderStatus processOrder(Long orderId) {
+        Order order = findByOrderId(orderId);
+        if (order.getStatus() == OrderStatus.ORDER) {
+            return order.getStatus();
         }
+        return orderPayAndUpdateStatus(order);
     }
 
-    private CompletableFuture<OrderStatus> orderPayAndUpdateStatus(Order order) {
+    private OrderStatus orderPayAndUpdateStatus(Order order) {
         boolean paymentSuccess = Math.random() < 0.8; // 결제 이탈율 20%
 
         if (!paymentSuccess) {
@@ -96,8 +81,8 @@ public class OrderService {
         } else {
             order.updateStatus(OrderStatus.ORDER);
         }
-        orderRepository.save(order);
-        return CompletableFuture.completedFuture(order.getStatus());
+        Order savedOrder = orderRepository.save(order);
+        return savedOrder.getStatus();
     }
 
 
