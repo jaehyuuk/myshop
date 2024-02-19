@@ -37,7 +37,6 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemStockDto getItemStock(Long itemId) {
         Item item = findByItemId(itemId);
-        saveItemToRedis(item);
         return ItemStockDto.of(item);
     }
 
@@ -54,6 +53,7 @@ public class ItemService {
         Item item = findByItemId(itemId);
         item.updateItem(updateItemDto);
         Item savedItem = itemRepository.save(item);
+        saveItemToRedis(savedItem); // redis 저장
         return ItemDetailDto.of(savedItem);
     }
 
