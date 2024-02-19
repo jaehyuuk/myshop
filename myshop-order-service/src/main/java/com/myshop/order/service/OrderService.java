@@ -1,6 +1,5 @@
 package com.myshop.order.service;
 
-import com.myshop.global.dto.StockUpdateRequest;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
 import com.myshop.domain.item.ReservedItem;
@@ -69,10 +68,11 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderStatus processOrder(Long orderId) {
+    public OrderStatus processOrder(Long userId, Long orderId) {
+        findByUserId(userId);
         Order order = findByOrderId(orderId);
         if (order.getStatus() == OrderStatus.ORDER) {
-            return order.getStatus();
+            throw new BadRequestException("이미 주문이 완료 되었습니다.");
         }
         return orderPayAndUpdateStatus(order);
     }
@@ -187,11 +187,14 @@ public class OrderService {
     }
 
     public Mono<String> updateStockQuantity(Long itemId, int stockQuantity) {
-        StockUpdateRequest request = new StockUpdateRequest(stockQuantity);
-
         return webClient.put()
-                .uri("http://localhost:8085/api/stocks/{itemId}", itemId)
-                .bodyValue(request)
+                .uri(uriBuilder -> uriBuilder
+                        .scheme("http")
+                        .host("localhost")
+                        .port(8085)
+                        .path("/api/internal/stocks/{itemId}")
+                        .queryParam("stockQuantity", stockQuantity)
+                        .build(itemId))
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(e -> Mono.just("Error updating stock quantity: " + e.getMessage()));

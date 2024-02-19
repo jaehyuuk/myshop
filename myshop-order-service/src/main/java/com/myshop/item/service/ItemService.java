@@ -96,18 +96,13 @@ public class ItemService {
 
     private void saveItemToRedis(Item item) {
         String key = "item:" + item.getId();
+        redisTemplate.opsForHash().put(key, "name", item.getName());
         redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(item.getStockQuantity()));
-
-        LocalDateTime reservationStart = null;
-        LocalDateTime reservationEnd = null;
 
         if (item instanceof ReservedItem) {
             ReservedItem reservedItem = (ReservedItem) item;
-            reservationStart = reservedItem.getReservationStart();
-            reservationEnd = reservedItem.getReservationEnd();
-        }
-
-        if (reservationStart != null && reservationEnd != null) {
+            LocalDateTime reservationStart = reservedItem.getReservationStart();
+            LocalDateTime reservationEnd = reservedItem.getReservationEnd();
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
             redisTemplate.opsForHash().put(key, "reservationStart", reservationStart.format(formatter));
             redisTemplate.opsForHash().put(key, "reservationEnd", reservationEnd.format(formatter));

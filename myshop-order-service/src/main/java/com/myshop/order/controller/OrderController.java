@@ -1,7 +1,7 @@
 package com.myshop.order.controller;
 
 import com.myshop.domain.OrderStatus;
-import com.myshop.order.dto.PrepareOrderRequest;
+import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.global.utils.AuthenticationUtils;
 import com.myshop.order.dto.OrderDto;
 import com.myshop.order.service.OrderService;
@@ -19,24 +19,18 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping
-    public ResponseEntity<?> prepareOrder(@RequestBody PrepareOrderRequest request) {
-        try {
-            Long orderId = orderService.prepareOrder(request.getUserId(), request.getOrderItemDtos());
-            return ResponseEntity.ok().body("Order prepared successfully with ID: " + orderId);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error preparing order: " + e.getMessage());
-        }
+    @PostMapping("/prepare")
+    public ResponseEntity<Long> prepareOrder(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        Long orderId = orderService.prepareOrder(userId, orderItemDtos);
+        return ResponseEntity.ok().body(orderId);
     }
 
-    @PostMapping("/pay/{orderId}")
-    public ResponseEntity<?> processOrder(@PathVariable Long orderId) {
-        try {
-            OrderStatus status = orderService.processOrder(orderId);
-            return ResponseEntity.ok().body("Order processed with status: " + status);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error processing order: " + e.getMessage());
-        }
+    @PostMapping("/process/{orderId}")
+    public ResponseEntity<OrderStatus> processOrder(@PathVariable Long orderId) {
+        Long userId = AuthenticationUtils.getUserIdByToken();
+        OrderStatus status = orderService.processOrder(userId, orderId);
+        return ResponseEntity.ok().body(status);
     }
 
     @GetMapping("/user")
