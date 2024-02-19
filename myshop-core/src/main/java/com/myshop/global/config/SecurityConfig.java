@@ -62,6 +62,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/api/items/**").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/orders").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/orders/{orderId}").hasAuthority("ROLE_ADMIN")
+                .antMatchers("/api/stocks").hasAuthority("ROLE_ADMIN")
+                .antMatchers("/api/stocks/**").hasAuthority("ROLE_ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 정책: STATELESS
