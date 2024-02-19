@@ -1,4 +1,4 @@
-package com.myshop.dto;
+package com.myshop.order.dto;
 
 import com.myshop.domain.item.GeneralItem;
 import com.myshop.domain.item.ReservedItem;

@@ -1,19 +1,16 @@
-package com.myshop.controller;
+package com.myshop.order.controller;
 
 import com.myshop.domain.OrderStatus;
-import com.myshop.dto.PrepareOrderRequest;
+import com.myshop.order.dto.PrepareOrderRequest;
 import com.myshop.global.utils.AuthenticationUtils;
-import com.myshop.dto.CreateOrderItemDto;
-import com.myshop.dto.OrderDto;
-import com.myshop.service.OrderService;
+import com.myshop.order.dto.OrderDto;
+import com.myshop.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController

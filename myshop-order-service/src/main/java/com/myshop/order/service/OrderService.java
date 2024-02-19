@@ -1,4 +1,4 @@
-package com.myshop.service;
+package com.myshop.order.service;
 
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
@@ -7,9 +7,9 @@ import com.myshop.item.repository.ItemRepository;
 import com.myshop.domain.Order;
 import com.myshop.domain.OrderItem;
 import com.myshop.domain.OrderStatus;
-import com.myshop.dto.CreateOrderItemDto;
-import com.myshop.dto.OrderDto;
-import com.myshop.repository.OrderRepository;
+import com.myshop.order.dto.CreateOrderItemDto;
+import com.myshop.order.dto.OrderDto;
+import com.myshop.order.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +75,6 @@ public class OrderService {
 
     private OrderStatus orderPayAndUpdateStatus(Order order) {
         boolean paymentSuccess = Math.random() < 0.8; // 결제 이탈율 20%
-
         if (!paymentSuccess) {
             order.cancel();
         } else {
