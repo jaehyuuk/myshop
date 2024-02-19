@@ -46,6 +46,10 @@ public abstract class Item {
         }
     }
 
+    public void setStockQuantity(int quantity) {
+        this.stockQuantity = quantity;
+    }
+
     // stock 증가
     public void addStock(int quantity) {
         this.stockQuantity += quantity;

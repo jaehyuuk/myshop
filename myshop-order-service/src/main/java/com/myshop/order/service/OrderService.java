@@ -17,10 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -34,29 +37,28 @@ public class OrderService {
 
     @Transactional
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
-        User user = findByUserId(userId);
-        Order order = createOrder(user);
-        addOrderItemsToOrder(order, orderItemDtos);
-        Order savedOrder = orderRepository.save(order);
-        return savedOrder.getId();
+        User user = findEntityById(userRepository::findById, userId, "회원");
+        Order order = createAndSaveOrder(user, orderItemDtos);
+        return order.getId();
     }
 
-    private Order createOrder(User user) {
-        return Order.builder()
-                .user(user)
-                .status(OrderStatus.PREPARATION)
-                .build();
+    private Order createAndSaveOrder(User user, List<CreateOrderItemDto> orderItemDtos) {
+        Order order = new Order(user, OrderStatus.PREPARATION);
+        orderItemDtos.forEach(dto -> processOrderItem(dto, order));
+        return orderRepository.save(order);
     }
 
-    private void addOrderItemsToOrder(Order order, List<CreateOrderItemDto> orderItemDtos) {
-        for (CreateOrderItemDto dto : orderItemDtos) {
-            Item item = findByItemId(dto.getItemId());
-            if (item instanceof ReservedItem) {
-                ReservedItem reservedItem = (ReservedItem) item;
-                validateReservedItem(reservedItem);
-            }
-            OrderItem orderItem = dto.toEntity(item);
-            order.addOrderItem(orderItem);
+    private void processOrderItem(CreateOrderItemDto dto, Order order) {
+        Item item = findEntityById(itemRepository::findById, dto.getItemId(), "상품");
+        validateItemForOrder(item);
+        OrderItem orderItem = dto.toEntity(item);
+        order.addOrderItem(orderItem);
+    }
+
+    private void validateItemForOrder(Item item) {
+        if (item instanceof ReservedItem) {
+            ReservedItem reservedItem = (ReservedItem) item;
+            validateReservedItem(reservedItem);
         }
     }
 
@@ -69,69 +71,67 @@ public class OrderService {
 
     @Transactional
     public OrderStatus processOrder(Long userId, Long orderId) {
-        findByUserId(userId);
-        Order order = findByOrderId(orderId);
+        findEntityById(userRepository::findById, userId, "회원");
+        Order order = findEntityById(orderRepository::findById, orderId, "주문");
         if (order.getStatus() == OrderStatus.ORDER) {
-            throw new BadRequestException("이미 주문이 완료 되었습니다.");
+            throw new BadRequestException("주문 상태가 준비 중이 아니어서 변경할 수 없습니다.");
         }
         return orderPayAndUpdateStatus(order);
     }
 
     private OrderStatus orderPayAndUpdateStatus(Order order) {
-        boolean paymentSuccess = Math.random() < 0.8; // 결제 이탈율 20%
-        if (!paymentSuccess) {
-            cancel(order);
-        } else {
-            order.updateStatus(OrderStatus.ORDER);
-            // 결제 성공 시 각 주문 항목에 대해 재고 수량 업데이트 (redis)
-            order.getOrderItems().forEach(orderItem -> {
-                updateStockQuantity(orderItem.getItem().getId(), orderItem.getItem().getStockQuantity() - orderItem.getCount())
-                        .subscribe(result -> log.info(result),
-                                error -> log.error("Error updating stock: ", error));
-            });
+        // 결제 이탈율 20%
+        if (Math.random() < 0.2) {
+            order.updateStatus(OrderStatus.CANCEL);
+            order.cancel();
+            return order.getStatus();
         }
+
+        // 결제 실패율 20%
+        if (Math.random() < 0.2) {
+            order.updateStatus(OrderStatus.FAIL);
+            order.cancel();
+            return order.getStatus();
+        }
+
+        // 결제 성공
+        order.updateStatus(OrderStatus.ORDER);
+        updateOrderItemsStock(order);
         Order savedOrder = orderRepository.save(order);
         return savedOrder.getStatus();
     }
 
-    private void cancel(Order order) {
-        order.updateStatus(OrderStatus.CANCEL);
-        for (OrderItem orderItem : order.getOrderItems()) {
-            orderItem.getItem().addStock(orderItem.getCount());
-            // redis
-            int restoredQuantity = orderItem.getItem().getStockQuantity() + orderItem.getCount();
-            updateStockQuantity(orderItem.getItem().getId(), restoredQuantity)
+    private void updateOrderItemsStock(Order order) {
+        // 결제 성공 시 각 주문 항목에 대해 재고 수량 업데이트
+        order.getOrderItems().forEach(orderItem -> {
+            int newStockQuantity = orderItem.getItem().getStockQuantity();
+            updateStockQuantity(orderItem.getItem().getId(), newStockQuantity)
                     .subscribe(result -> log.info(result),
-                            error -> log.error("Error restoring stock: ", error));
-        }
-    }
-
-    @Transactional(readOnly = true)
-    public List<OrderDto> getUserOrders(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
-                .map(OrderDto::of)
-                .collect(Collectors.toList());
+                            error -> log.error("Error updating stock: ", error));
+        });
     }
 
     @Transactional
     public void cancelOrder(Long userId, Long orderId) {
-        Order order = findByOrderId(orderId);
-        validateUser(order, userId);
-        cancel(order);
+        Order order = validateOrder(userId, orderId);
+        order.updateStatus(OrderStatus.CANCEL);
+        order.cancel();
     }
 
     @Transactional
     public void removeOrderItem(Long userId, Long orderId, Long orderItemId) {
-        Order order = findByOrderId(orderId);
+        Order order = validateOrder(userId, orderId);
+        OrderItem orderItem = findOrderItemById(order, orderItemId);
+        order.removeOrderItem(orderItem);
+    }
+
+    private Order validateOrder(Long orderId, Long userId) {
+        Order order = findEntityById(orderRepository::findById, orderId, "주문");
         validateUser(order, userId);
-        OrderItem orderItemToRemove = findOrderItemById(order, orderItemId);
-        // redis
-        int restoredQuantity = orderItemToRemove.getItem().getStockQuantity() + orderItemToRemove.getCount();
-        updateStockQuantity(orderItemToRemove.getItem().getId(), restoredQuantity)
-                .subscribe(result -> log.info(result),
-                        error -> log.error("Error restoring stock after item removal: ", error));
-        order.removeOrderItem(orderItemToRemove);
+        if (order.getStatus() != OrderStatus.PREPARATION) {
+            throw new BadRequestException("주문 상태가 준비 중이 아니어서 변경할 수 없습니다.");
+        }
+        return order;
     }
 
     private OrderItem findOrderItemById(Order order, Long orderItemId) {
@@ -147,37 +147,29 @@ public class OrderService {
         return orders.stream().map(OrderDto::of).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<OrderDto> getUserOrders(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        return orders.stream()
+                .map(OrderDto::of)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void deleteOrder(Long orderId) {
-        Order order = findByOrderId(orderId);
-        // 주문에 포함된 각 주문 항목에 대해 재고 복원
+        Order order = findEntityById(orderRepository::findById, orderId, "주문");
+        // 주문 삭제 시 재고 복원 로직
         order.getOrderItems().forEach(orderItem -> {
             int restoredQuantity = orderItem.getItem().getStockQuantity() + orderItem.getCount();
             updateStockQuantity(orderItem.getItem().getId(), restoredQuantity)
-                    .subscribe(
-                            result -> log.info(result),
-                            error -> log.error("Error restoring stock before deleting order: ", error)
-                    );
+                    .subscribe(result -> log.info(result),
+                            error -> log.error("Error restoring stock: ", error));
         });
         orderRepository.delete(order);
     }
 
-    private User findByUserId(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new BadRequestException("유저 정보를 찾을 수 없습니다.")
-        );
-    }
-
-    private Order findByOrderId(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(
-                () -> new BadRequestException("주문 내역이 존재하지 않습니다.")
-        );
-    }
-
-    private Item findByItemId(Long itemId) {
-        return itemRepository.findById(itemId).orElseThrow(
-                () -> new BadRequestException("상품이 존재하지 않습니다.")
-        );
+    private <T> T findEntityById(Function<Long, Optional<T>> finder, Long id, String entityName) {
+        return finder.apply(id).orElseThrow(() -> new BadRequestException(entityName + " 정보를 찾을 수 없습니다."));
     }
 
     private void validateUser(Order order, Long userId) {
@@ -188,15 +180,17 @@ public class OrderService {
 
     public Mono<String> updateStockQuantity(Long itemId, int stockQuantity) {
         return webClient.put()
-                .uri(uriBuilder -> uriBuilder
-                        .scheme("http")
-                        .host("localhost")
-                        .port(8085)
-                        .path("/api/internal/stocks/{itemId}")
-                        .queryParam("stockQuantity", stockQuantity)
-                        .build(itemId))
+                .uri(buildStockUpdateUri(itemId, stockQuantity))
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(e -> Mono.just("Error updating stock quantity: " + e.getMessage()));
+    }
+
+    private String buildStockUpdateUri(Long itemId, int stockQuantity) {
+        return UriComponentsBuilder.fromHttpUrl("http://localhost:8085")
+                .path("/api/internal/stocks/{itemId}")
+                .queryParam("stockQuantity", stockQuantity)
+                .buildAndExpand(itemId)
+                .toUriString();
     }
 }

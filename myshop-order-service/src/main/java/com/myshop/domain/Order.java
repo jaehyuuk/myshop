@@ -39,6 +39,12 @@ public class Order extends BaseTimeEntity {
         this.status = newStatus;
     }
 
+    public void cancel() {
+        for (OrderItem orderItem : orderItems) {
+            orderItem.getItem().addStock(orderItem.getCount());
+        }
+    }
+
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
         orderItem.getItem().removeStock(orderItem.getCount()); // 주문 항목 추가 시 재고 감소
