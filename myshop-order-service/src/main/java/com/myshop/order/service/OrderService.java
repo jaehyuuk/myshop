@@ -1,5 +1,6 @@
 package com.myshop.order.service;
 
+import com.myshop.global.dto.StockUpdateRequest;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
 import com.myshop.domain.item.ReservedItem;
@@ -16,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +31,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final WebClient webClient;
 
     @Transactional
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
@@ -76,14 +80,31 @@ public class OrderService {
     private OrderStatus orderPayAndUpdateStatus(Order order) {
         boolean paymentSuccess = Math.random() < 0.8; // 결제 이탈율 20%
         if (!paymentSuccess) {
-            order.cancel();
+            cancel(order);
         } else {
             order.updateStatus(OrderStatus.ORDER);
+            // 결제 성공 시 각 주문 항목에 대해 재고 수량 업데이트 (redis)
+            order.getOrderItems().forEach(orderItem -> {
+                updateStockQuantity(orderItem.getItem().getId(), orderItem.getItem().getStockQuantity() - orderItem.getCount())
+                        .subscribe(result -> log.info(result),
+                                error -> log.error("Error updating stock: ", error));
+            });
         }
         Order savedOrder = orderRepository.save(order);
         return savedOrder.getStatus();
     }
 
+    private void cancel(Order order) {
+        order.updateStatus(OrderStatus.CANCEL);
+        for (OrderItem orderItem : order.getOrderItems()) {
+            orderItem.getItem().addStock(orderItem.getCount());
+            // redis
+            int restoredQuantity = orderItem.getItem().getStockQuantity() + orderItem.getCount();
+            updateStockQuantity(orderItem.getItem().getId(), restoredQuantity)
+                    .subscribe(result -> log.info(result),
+                            error -> log.error("Error restoring stock: ", error));
+        }
+    }
 
     @Transactional(readOnly = true)
     public List<OrderDto> getUserOrders(Long userId) {
@@ -97,7 +118,7 @@ public class OrderService {
     public void cancelOrder(Long userId, Long orderId) {
         Order order = findByOrderId(orderId);
         validateUser(order, userId);
-        order.cancel();
+        cancel(order);
     }
 
     @Transactional
@@ -105,6 +126,11 @@ public class OrderService {
         Order order = findByOrderId(orderId);
         validateUser(order, userId);
         OrderItem orderItemToRemove = findOrderItemById(order, orderItemId);
+        // redis
+        int restoredQuantity = orderItemToRemove.getItem().getStockQuantity() + orderItemToRemove.getCount();
+        updateStockQuantity(orderItemToRemove.getItem().getId(), restoredQuantity)
+                .subscribe(result -> log.info(result),
+                        error -> log.error("Error restoring stock after item removal: ", error));
         order.removeOrderItem(orderItemToRemove);
     }
 
@@ -124,6 +150,15 @@ public class OrderService {
     @Transactional
     public void deleteOrder(Long orderId) {
         Order order = findByOrderId(orderId);
+        // 주문에 포함된 각 주문 항목에 대해 재고 복원
+        order.getOrderItems().forEach(orderItem -> {
+            int restoredQuantity = orderItem.getItem().getStockQuantity() + orderItem.getCount();
+            updateStockQuantity(orderItem.getItem().getId(), restoredQuantity)
+                    .subscribe(
+                            result -> log.info(result),
+                            error -> log.error("Error restoring stock before deleting order: ", error)
+                    );
+        });
         orderRepository.delete(order);
     }
 
@@ -149,5 +184,16 @@ public class OrderService {
         if (!order.getUser().getId().equals(userId)) {
             throw new BadRequestException("주문 취소 권한이 없습니다.");
         }
+    }
+
+    public Mono<String> updateStockQuantity(Long itemId, int stockQuantity) {
+        StockUpdateRequest request = new StockUpdateRequest(stockQuantity);
+
+        return webClient.put()
+                .uri("http://localhost:8085/api/stocks/{itemId}", itemId)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorResume(e -> Mono.just("Error updating stock quantity: " + e.getMessage()));
     }
 }

@@ -1,6 +1,7 @@
 package com.myshop.controller;
 
 import com.myshop.dto.StockDto;
+import com.myshop.global.dto.StockUpdateRequest;
 import com.myshop.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,9 +35,9 @@ public class StockController {
     }
 
     @PutMapping("/{itemId}")
-    public ResponseEntity<?> updateStockQuantity(@PathVariable Long itemId, @RequestParam int stockQuantity) {
+    public ResponseEntity<?> updateStockQuantity(@PathVariable Long itemId, @RequestBody StockUpdateRequest request) {
         try {
-            stockService.updateStockQuantity(itemId, stockQuantity);
+            stockService.updateStockQuantity(itemId, request.getStockQuantity());
             return ResponseEntity.ok().body("Stock quantity updated successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating stock quantity: " + e.getMessage());
