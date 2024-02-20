@@ -10,3 +10,5 @@
 ```
 docker-compose up -d
 ```
+## API 문서
+#### [yeyak-market API (Postman)](https://documenter.getpostman.com/view/29397283/2sA2r9V3S6)
