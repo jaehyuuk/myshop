@@ -59,8 +59,8 @@ public class ItemService {
 
     @Transactional
     public void deleteItem(Long itemId) {
-        Item item = findByItemId(itemId);
-        deleteItemToRedis(item);
+        findByItemId(itemId);
+        deleteItemToRedis(itemId);
         itemRepository.deleteById(itemId);
     }
 
@@ -109,9 +109,9 @@ public class ItemService {
         }
     }
 
-    private void deleteItemToRedis(Item item) {
-        String key = "item:" + item.getId();
-        if (redisTemplate.opsForValue().get(key) != null) {
+    private void deleteItemToRedis(Long itemId) {
+        String key = "item:" + itemId;
+        if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
             redisTemplate.delete(key);
         }
     }

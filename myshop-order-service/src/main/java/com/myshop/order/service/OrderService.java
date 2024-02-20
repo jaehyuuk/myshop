@@ -113,25 +113,26 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(Long userId, Long orderId) {
-        Order order = validateOrder(userId, orderId);
-        order.updateStatus(OrderStatus.CANCEL);
-        order.cancel();
-    }
-
-    @Transactional
-    public void removeOrderItem(Long userId, Long orderId, Long orderItemId) {
-        Order order = validateOrder(userId, orderId);
-        OrderItem orderItem = findOrderItemById(order, orderItemId);
-        order.removeOrderItem(orderItem);
-    }
-
-    private Order validateOrder(Long orderId, Long userId) {
         Order order = findEntityById(orderRepository::findById, orderId, "주문");
         validateUser(order, userId);
         if (order.getStatus() != OrderStatus.PREPARATION) {
             throw new BadRequestException("주문 상태가 준비 중이 아니어서 변경할 수 없습니다.");
         }
-        return order;
+        order.updateStatus(OrderStatus.CANCEL);
+        order.cancel();
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void removeOrderItem(Long userId, Long orderId, Long orderItemId) {
+        Order order = findEntityById(orderRepository::findById, orderId, "주문");
+        validateUser(order, userId);
+        if (order.getStatus() != OrderStatus.PREPARATION) {
+            throw new BadRequestException("주문 상태가 준비 중이 아니어서 변경할 수 없습니다.");
+        }
+        OrderItem orderItem = findOrderItemById(order, orderItemId);
+        order.removeOrderItem(orderItem);
+        orderRepository.save(order);
     }
 
     private OrderItem findOrderItemById(Order order, Long orderItemId) {

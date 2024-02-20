@@ -19,14 +19,14 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
-    @PostMapping("/prepare")
+    @PostMapping
     public ResponseEntity<Long> prepareOrder(@RequestBody List<CreateOrderItemDto> orderItemDtos) {
         Long userId = AuthenticationUtils.getUserIdByToken();
         Long orderId = orderService.prepareOrder(userId, orderItemDtos);
         return ResponseEntity.ok().body(orderId);
     }
 
-    @PostMapping("/process/{orderId}")
+    @PostMapping("/pay/{orderId}")
     public ResponseEntity<OrderStatus> processOrder(@PathVariable Long orderId) {
         Long userId = AuthenticationUtils.getUserIdByToken();
         OrderStatus status = orderService.processOrder(userId, orderId);
