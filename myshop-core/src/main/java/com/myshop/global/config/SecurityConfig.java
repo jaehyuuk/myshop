@@ -57,6 +57,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/internal/**")
                 .permitAll() // 인증 필요 없는 URL 설정
                 .antMatchers(HttpMethod.GET, "/api/users").hasAuthority("ROLE_ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/posts").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.POST, "/api/items/**").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.PUT, "/api/items/**").hasAuthority("ROLE_ADMIN")
                 .antMatchers(HttpMethod.DELETE, "/api/items/**").hasAuthority("ROLE_ADMIN")
