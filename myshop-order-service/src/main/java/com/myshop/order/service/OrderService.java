@@ -74,7 +74,7 @@ public class OrderService {
         findEntityById(userRepository::findById, userId, "회원");
         Order order = findEntityById(orderRepository::findById, orderId, "주문");
         if (order.getStatus() == OrderStatus.ORDER) {
-            throw new BadRequestException("주문 상태가 준비 중이 아니어서 변경할 수 없습니다.");
+            throw new BadRequestException("이미 주문이 완료되었습니다.");
         }
         return orderPayAndUpdateStatus(order);
     }
