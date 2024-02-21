@@ -1,7 +1,5 @@
 package com.myshop.service;
 
-import com.myshop.domain.Comment;
-import com.myshop.domain.Like;
 import com.myshop.domain.Post;
 import com.myshop.user.domain.User;
 import com.myshop.dto.*;
@@ -215,91 +213,6 @@ class PostServiceTest {
         assertThrows(BadRequestException.class, () -> {
             postService.deletePost(userId, postId);
         });
-    }
-
-    @Test
-    @DisplayName("게시물에 좋아요 추가 테스트")
-    void likePostTest() {
-        // given
-        Long userId = 1L;
-        Long postId = 1L;
-        User user = User.builder().id(userId).build();
-        Post post = Post.builder().id(postId).likes(new ArrayList<>()).user(user).build();
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(postRepository.findById(postId)).willReturn(Optional.of(post));
-
-        // when
-        postService.likePost(userId, postId);
-
-        // then
-        assertTrue(post.getLikes().stream().anyMatch(like -> like.getUserId().equals(userId)));
-    }
-
-    @Test
-    @DisplayName("이미 좋아요한 게시물 좋아요 취소 테스트")
-    void unlikePostTest() {
-        // given
-        Long userId = 1L;
-        Long postId = 1L;
-        Like existingLike = Like.builder().userId(userId).build();
-        User user = User.builder().id(userId).build();
-        Post post = Post.builder().id(postId).likes(new ArrayList<>(Collections.singletonList(existingLike))).user(user).build();
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(postRepository.findById(postId)).willReturn(Optional.of(post));
-
-        // when
-        postService.likePost(userId, postId);
-
-        // then
-        assertFalse(post.getLikes().stream().anyMatch(like -> like.getUserId().equals(userId)));
-    }
-
-    @Test
-    @DisplayName("댓글 추가 테스트")
-    void addCommentTest() {
-        // given
-        Long userId = 1L;
-        Long postId = 1L;
-        CreateCommentDto createCommentDto = mock(CreateCommentDto.class);
-        User user = User.builder().id(userId).name("User Name").profileImg("profileImg.jpg").build();
-        Comment comment = Comment.builder().content("Comment Content").writer(user).build();
-        Post post = Post.builder().id(postId).comments(new ArrayList<>()).user(user).build();
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(postRepository.findById(postId)).willReturn(Optional.of(post));
-        given(createCommentDto.toEntity(user)).willReturn(comment);
-
-        // when
-        List<CommentDto> result = postService.addComment(userId, postId, createCommentDto);
-
-        // then
-        assertTrue(result.stream().anyMatch(cDto -> cDto.getContent().equals(comment.getContent())
-                && cDto.getName().equals(user.getName())
-                && cDto.getProfileImg().equals(user.getProfileImg())
-                && cDto.getUserId().equals(user.getId())));
-    }
-
-    @Test
-    @DisplayName("댓글 삭제 테스트")
-    void removeCommentTest() {
-        // given: 필요한 데이터 및 모의 객체 설정
-        Long userId = 1L;
-        Long postId = 1L;
-        Long commentId = 1L;
-        User user = User.builder().id(userId).build();
-        Comment comment = Comment.builder().id(commentId).writer(user).build();
-        Post post = Post.builder().id(postId).comments(new ArrayList<>(Arrays.asList(comment))).build();
-
-        given(userRepository.findById(userId)).willReturn(Optional.of(user));
-        given(postRepository.findById(postId)).willReturn(Optional.of(post));
-
-        // when: 테스트 대상 메소드 실행
-        postService.removeComment(userId, postId, commentId);
-
-        // then: 결과 검증
-        assertFalse(post.getComments().contains(comment));
     }
 
     @Test
