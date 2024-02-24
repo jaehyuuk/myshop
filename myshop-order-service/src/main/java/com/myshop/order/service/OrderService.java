@@ -15,6 +15,8 @@ import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -35,7 +37,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final WebClient webClient;
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRED)
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findEntityById(userRepository::findById, userId, "회원");
         Order order = createAndSaveOrder(user, orderItemDtos);
@@ -55,21 +57,7 @@ public class OrderService {
         order.addOrderItem(orderItem);
     }
 
-    private void validateItemForOrder(Item item) {
-        if (item instanceof ReservedItem) {
-            ReservedItem reservedItem = (ReservedItem) item;
-            validateReservedItem(reservedItem);
-        }
-    }
-
-    private void validateReservedItem(ReservedItem reservedItem) {
-        LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(reservedItem.getReservationStart()) || now.isAfter(reservedItem.getReservationEnd())) {
-            throw new IllegalStateException("예약 가능한 시간이 아닙니다.");
-        }
-    }
-
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public OrderStatus processOrder(Long userId, Long orderId) {
         findEntityById(userRepository::findById, userId, "회원");
         Order order = findEntityById(orderRepository::findById, orderId, "주문");
@@ -80,21 +68,23 @@ public class OrderService {
     }
 
     private OrderStatus orderPayAndUpdateStatus(Order order) {
-        // 결제 이탈율 20%
-        if (Math.random() < 0.2) {
-            order.updateStatus(OrderStatus.CANCEL);
-            order.cancel();
-            return order.getStatus();
+        double randomValue = Math.random();
+        if (randomValue < 0.2) { // 결제 이탈율 20%
+            return handlePaymentFailure(order, OrderStatus.CANCEL);
+        } else if (randomValue < 0.4) { // 0.2 ~ 0.4 범위 내에서 결제 실패 처리 20%
+            return handlePaymentFailure(order, OrderStatus.FAIL);
         }
-
-        // 결제 실패율 20%
-        if (Math.random() < 0.2) {
-            order.updateStatus(OrderStatus.FAIL);
-            order.cancel();
-            return order.getStatus();
-        }
-
         // 결제 성공
+        return handlePaymentSuccess(order);
+    }
+
+    private OrderStatus handlePaymentFailure(Order order, OrderStatus failureStatus) {
+        order.updateStatus(failureStatus);
+        order.cancel();
+        return order.getStatus();
+    }
+
+    private OrderStatus handlePaymentSuccess(Order order) {
         order.updateStatus(OrderStatus.ORDER);
         updateOrderItemsStock(order);
         Order savedOrder = orderRepository.save(order);
@@ -109,6 +99,16 @@ public class OrderService {
                     .subscribe(result -> log.info(result),
                             error -> log.error("Error updating stock: ", error));
         });
+    }
+
+    private void validateItemForOrder(Item item) {
+        if (item instanceof ReservedItem) {
+            ReservedItem reservedItem = (ReservedItem) item;
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isBefore(reservedItem.getReservationStart()) || now.isAfter(reservedItem.getReservationEnd())) {
+                throw new BadRequestException("예약 가능한 시간이 아닙니다.");
+            }
+        }
     }
 
     @Transactional
