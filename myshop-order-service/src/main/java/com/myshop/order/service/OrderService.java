@@ -15,8 +15,6 @@ import com.myshop.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -37,7 +35,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final WebClient webClient;
 
-    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRED)
+    @Transactional
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findEntityById(userRepository::findById, userId, "회원");
         Order order = createAndSaveOrder(user, orderItemDtos);
@@ -57,7 +55,7 @@ public class OrderService {
         order.addOrderItem(orderItem);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED)
+    @Transactional
     public OrderStatus processOrder(Long userId, Long orderId) {
         findEntityById(userRepository::findById, userId, "회원");
         Order order = findEntityById(orderRepository::findById, orderId, "주문");
