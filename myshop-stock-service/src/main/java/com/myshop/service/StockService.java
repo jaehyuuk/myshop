@@ -19,17 +19,6 @@ public class StockService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public void saveStock(CreateStockDto stock) {
-        String key = "order:" + stock.getOrderId();
-        try {
-            String stockJson = objectMapper.writeValueAsString(stock);
-            redisTemplate.opsForValue().set(key, stockJson);
-            log.info("Successfully saved stock for orderId: {} as JSON: {}", stock.getOrderId(), stockJson);
-        } catch (Exception e) {
-            log.error("Failed to serialize stock for orderId: {} to JSON. Error: {}", stock.getOrderId(), e.getMessage(), e);
-        }
-    }
-
     public Optional<CreateStockDto> findStockById(Long orderId) {
         String key = "order:" + orderId;
         if (!redisTemplate.hasKey(key)) {
@@ -58,13 +47,24 @@ public class StockService {
         }
     }
 
-    public void deleteStock(Long orderId) {
-        String key = "order:" + orderId;
-        redisTemplate.delete(key);
-    }
-
     public void updateStockQuantity(Long itemId, int newStockQuantity) {
         String key = "item:" + itemId;
         redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(newStockQuantity));
+    }
+
+    public void saveStock(CreateStockDto stock) {
+        String key = "order:" + stock.getOrderId();
+        try {
+            String stockJson = objectMapper.writeValueAsString(stock);
+            redisTemplate.opsForValue().set(key, stockJson);
+            log.info("Successfully saved stock for orderId: {} as JSON: {}", stock.getOrderId(), stockJson);
+        } catch (Exception e) {
+            log.error("Failed to serialize stock for orderId: {} to JSON. Error: {}", stock.getOrderId(), e.getMessage(), e);
+        }
+    }
+
+    public void deleteStock(Long orderId) {
+        String key = "order:" + orderId;
+        redisTemplate.delete(key);
     }
 }

@@ -13,12 +13,6 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
     private final StockService stockService;
 
-    @PostMapping
-    public ResponseEntity<?> saveStock(@RequestBody CreateStockDto stock) {
-        stockService.saveStock(stock);
-        return ResponseEntity.ok().build();
-    }
-
     @GetMapping("/find/{orderId}")
     public ResponseEntity<?> findStock(@PathVariable Long orderId) {
         return stockService.findStockById(orderId)
