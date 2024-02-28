@@ -1,6 +1,6 @@
 package com.myshop.controller;
 
-import com.myshop.dto.StockDto;
+import com.myshop.global.dto.CreateStockDto;
 import com.myshop.dto.UpdateStockDto;
 import com.myshop.service.StockService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ public class StockController {
     private final StockService stockService;
 
     @PostMapping
-    public ResponseEntity<?> saveStock(@RequestBody StockDto stock) {
+    public ResponseEntity<?> saveStock(@RequestBody CreateStockDto stock) {
         stockService.saveStock(stock);
         return ResponseEntity.ok().build();
     }

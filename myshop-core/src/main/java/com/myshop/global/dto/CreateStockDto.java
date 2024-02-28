@@ -1,13 +1,11 @@
-package com.myshop.order.dto;
+package com.myshop.global.dto;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class StockDto {
+public class CreateStockDto {
     private Long orderId;
     private Long userId;
     private int stockQuantity;

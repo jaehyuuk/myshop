@@ -1,6 +1,6 @@
 package com.myshop.controller;
 
-import com.myshop.dto.StockDto;
+import com.myshop.global.dto.CreateStockDto;
 import com.myshop.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ public class InternalStockController {
     private final StockService stockService;
 
     @PostMapping
-    public ResponseEntity<?> saveStock(@RequestBody StockDto stock) {
+    public ResponseEntity<?> saveStock(@RequestBody CreateStockDto stock) {
         stockService.saveStock(stock);
         return ResponseEntity.ok().build();
     }

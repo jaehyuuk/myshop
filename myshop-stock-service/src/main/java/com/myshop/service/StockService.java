@@ -1,7 +1,7 @@
 package com.myshop.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.myshop.dto.StockDto;
+import com.myshop.global.dto.CreateStockDto;
 import com.myshop.dto.UpdateStockDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ public class StockService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    public void saveStock(StockDto stock) {
+    public void saveStock(CreateStockDto stock) {
         String key = "order:" + stock.getOrderId();
         try {
             String stockJson = objectMapper.writeValueAsString(stock);
@@ -30,7 +30,7 @@ public class StockService {
         }
     }
 
-    public Optional<StockDto> findStockById(Long orderId) {
+    public Optional<CreateStockDto> findStockById(Long orderId) {
         String key = "order:" + orderId;
         if (!redisTemplate.hasKey(key)) {
             return Optional.empty();
@@ -38,7 +38,7 @@ public class StockService {
 
         Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
         if (entries != null && !entries.isEmpty()) {
-            StockDto stock = new StockDto();
+            CreateStockDto stock = new CreateStockDto();
             stock.setOrderId(orderId);
             stock.setUserId(Long.parseLong((String) entries.get("userId")));
             stock.setStockQuantity(Integer.parseInt((String) entries.get("stockQuantity")));

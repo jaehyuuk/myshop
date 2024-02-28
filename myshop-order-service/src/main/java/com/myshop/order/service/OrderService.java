@@ -1,6 +1,6 @@
 package com.myshop.order.service;
 
-import com.myshop.global.dto.CreateNotificationDto;
+import com.myshop.global.dto.CreateStockDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
 import com.myshop.domain.item.ReservedItem;
@@ -10,7 +10,6 @@ import com.myshop.domain.OrderItem;
 import com.myshop.domain.OrderStatus;
 import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
-import com.myshop.order.dto.StockDto;
 import com.myshop.order.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
@@ -60,8 +59,8 @@ public class OrderService {
         order.addOrderItem(dto.toEntity(item));
     }
 
-    private StockDto createStockDto(Order order, int totalStockQuantity) {
-        StockDto stockDto = new StockDto();
+    private CreateStockDto createStockDto(Order order, int totalStockQuantity) {
+        CreateStockDto stockDto = new CreateStockDto();
         stockDto.setOrderId(order.getId());
         stockDto.setUserId(order.getUser().getId());
         stockDto.setStockQuantity(totalStockQuantity);
@@ -206,7 +205,7 @@ public class OrderService {
                 .onErrorResume(e -> Mono.just("Error updating stock quantity: " + e.getMessage()));
     }
 
-    private void saveStock(StockDto stockDto) {
+    private void saveStock(CreateStockDto stockDto) {
         webClient.post()
                 .uri(baseUrl)
                 .bodyValue(stockDto)
