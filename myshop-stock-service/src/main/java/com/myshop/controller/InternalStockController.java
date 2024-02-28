@@ -18,9 +18,9 @@ public class InternalStockController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete/{stockId}")
-    public ResponseEntity<?> deleteStock(@PathVariable Long stockId) {
-        stockService.deleteStock(stockId);
+    @DeleteMapping("/delete/{orderID}")
+    public ResponseEntity<?> deleteStocksByOrderId(@PathVariable Long orderID) {
+        stockService.deleteStocksByOrderId(orderID);
         return ResponseEntity.ok().build();
     }
 

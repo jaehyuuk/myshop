@@ -215,10 +215,10 @@ public class OrderService {
                 .block();
     }
 
-    private void deleteStock(Long stockId) {
-        String uri = baseUrl + "/delete/{stockId}";
+    private void deleteStock(Long orderId) {
+        String uri = baseUrl + "/delete/{orderId}";
         webClient.delete()
-                .uri(uri, stockId)
+                .uri(uri, orderId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();

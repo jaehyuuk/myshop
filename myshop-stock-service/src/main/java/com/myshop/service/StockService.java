@@ -76,6 +76,11 @@ public class StockService {
         return stocks;
     }
 
+    public void deleteStock(Long stockId) {
+        String key = "stock:" + stockId;
+        redisTemplate.delete(key);
+    }
+
     public void saveStock(CreateStockDto stockDto) {
         String stockKey = "stock:" + stockDto.getStockId();
         String orderIndexKey = "orderIndex:" + stockDto.getOrderId();
@@ -94,9 +99,19 @@ public class StockService {
         }
     }
 
-    public void deleteStock(Long stockId) {
-        String key = "stock:" + stockId;
-        redisTemplate.delete(key);
+    public void deleteStocksByOrderId(Long orderId) {
+        String orderIndexKey = "orderIndex:" + orderId;
+        Set<String> stockIds = redisTemplate.opsForSet().members(orderIndexKey);
+        if (stockIds != null && !stockIds.isEmpty()) {
+            stockIds.forEach(stockId -> {
+                String stockKey = "stock:" + stockId;
+                redisTemplate.delete(stockKey);
+            });
+            redisTemplate.delete(orderIndexKey);
+            log.info("Deleted all stocks associated with orderId: {}", orderId);
+        } else {
+            log.info("No stocks found for orderId: {}, nothing to delete", orderId);
+        }
     }
 
     public void updateStockQuantity(Long itemId, int newStockQuantity) {
