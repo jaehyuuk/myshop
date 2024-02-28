@@ -2,15 +2,14 @@ package com.myshop.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.myshop.global.dto.CreateStockDto;
-import com.myshop.dto.UpdateStockDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -19,37 +18,45 @@ public class StockService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
+    public List<CreateStockDto> findAllStocks() {
+        List<CreateStockDto> stocks = new ArrayList<>();
+        ScanOptions options = ScanOptions.scanOptions().match("order:*").count(100).build();
+
+        try (Cursor<byte[]> cursor = redisTemplate.getConnectionFactory().getConnection().scan(options)) {
+            while (cursor.hasNext()) {
+                String key = new String(cursor.next());
+                String stockJson = redisTemplate.opsForValue().get(key);
+                if (stockJson != null && !stockJson.isEmpty()) {
+                    try {
+                        CreateStockDto stock = objectMapper.readValue(stockJson, CreateStockDto.class);
+                        stocks.add(stock);
+                    } catch (Exception e) {
+                        log.error("Failed to deserialize stock JSON for key: {}. Error: {}", key, e.getMessage(), e);
+                    }
+                } else {
+                    log.warn("No stock information found for key: {}", key);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error retrieving all stocks. Error: {}", e.getMessage(), e);
+        }
+        return stocks;
+    }
+
     public Optional<CreateStockDto> findStockById(Long orderId) {
         String key = "order:" + orderId;
-        if (!redisTemplate.hasKey(key)) {
-            return Optional.empty();
-        }
-
-        Map<Object, Object> entries = redisTemplate.opsForHash().entries(key);
-        if (entries != null && !entries.isEmpty()) {
-            CreateStockDto stock = new CreateStockDto();
-            stock.setOrderId(orderId);
-            stock.setUserId(Long.parseLong((String) entries.get("userId")));
-            stock.setStockQuantity(Integer.parseInt((String) entries.get("stockQuantity")));
-            return Optional.of(stock);
+        String stockJson = redisTemplate.opsForValue().get(key);
+        if (stockJson != null && !stockJson.isEmpty()) {
+            try {
+                CreateStockDto stock = objectMapper.readValue(stockJson, CreateStockDto.class);
+                return Optional.of(stock);
+            } catch (Exception e) {
+                log.error("Failed to deserialize stock for orderId: {}. Error: {}", orderId, e.getMessage(), e);
+            }
+        } else {
+            log.info("No stock found for orderId: {}", orderId);
         }
         return Optional.empty();
-    }
-
-    public void updateStock(Long orderId, UpdateStockDto stockDto) {
-        String key = "order:" + orderId;
-        Map<String, String> updates = new HashMap<>();
-        if (stockDto.getUserId() != null) updates.put("userId", stockDto.getUserId().toString());
-        if (stockDto.getStockQuantity() >= 0) updates.put("stockQuantity", String.valueOf(stockDto.getStockQuantity()));
-
-        if (!updates.isEmpty()) { // 업데이트할 내용이 있을 때만 업데이트 실행
-            redisTemplate.opsForHash().putAll(key, updates);
-        }
-    }
-
-    public void updateStockQuantity(Long itemId, int newStockQuantity) {
-        String key = "item:" + itemId;
-        redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(newStockQuantity));
     }
 
     public void saveStock(CreateStockDto stock) {
@@ -66,5 +73,10 @@ public class StockService {
     public void deleteStock(Long orderId) {
         String key = "order:" + orderId;
         redisTemplate.delete(key);
+    }
+
+    public void updateStockQuantity(Long itemId, int newStockQuantity) {
+        String key = "item:" + itemId;
+        redisTemplate.opsForHash().put(key, "stockQuantity", String.valueOf(newStockQuantity));
     }
 }

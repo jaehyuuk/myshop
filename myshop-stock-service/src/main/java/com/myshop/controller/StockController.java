@@ -1,11 +1,12 @@
 package com.myshop.controller;
 
 import com.myshop.global.dto.CreateStockDto;
-import com.myshop.dto.UpdateStockDto;
 import com.myshop.service.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/stocks")
@@ -13,17 +14,17 @@ import org.springframework.web.bind.annotation.*;
 public class StockController {
     private final StockService stockService;
 
+    @GetMapping
+    public ResponseEntity<List<CreateStockDto>> getAllStocks() {
+        List<CreateStockDto> stocks = stockService.findAllStocks();
+        return ResponseEntity.ok(stocks);
+    }
+
     @GetMapping("/find/{orderId}")
     public ResponseEntity<?> findStock(@PathVariable Long orderId) {
         return stockService.findStockById(orderId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/update/{orderId}")
-    public ResponseEntity<?> updateStock(@PathVariable Long orderId, @RequestBody UpdateStockDto stockDto) {
-        stockService.updateStock(orderId, stockDto);
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/delete/{orderId}")
