@@ -13,14 +13,14 @@ public class InternalStockController {
     private final StockService stockService;
 
     @PostMapping
-    public ResponseEntity<?> saveStock(@RequestBody CreateStockDto stock) {
-        stockService.saveStock(stock);
+    public ResponseEntity<?> saveStock(@RequestBody CreateStockDto stockDto) {
+        stockService.saveStock(stockDto);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete/{orderId}")
-    public ResponseEntity<?> deleteStock(@PathVariable Long orderId) {
-        stockService.deleteStock(orderId);
+    @DeleteMapping("/delete/{stockId}")
+    public ResponseEntity<?> deleteStock(@PathVariable Long stockId) {
+        stockService.deleteStock(stockId);
         return ResponseEntity.ok().build();
     }
 

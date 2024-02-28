@@ -20,16 +20,16 @@ public class StockController {
         return ResponseEntity.ok(stocks);
     }
 
-    @GetMapping("/find/{orderId}")
-    public ResponseEntity<?> findStock(@PathVariable Long orderId) {
-        return stockService.findStockById(orderId)
+    @GetMapping("/find/{stockId}")
+    public ResponseEntity<?> findStock(@PathVariable Long stockId) {
+        return stockService.findStockById(stockId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/delete/{orderId}")
-    public ResponseEntity<?> deleteStock(@PathVariable Long orderId) {
-        stockService.deleteStock(orderId);
+    @DeleteMapping("/delete/{stockId}")
+    public ResponseEntity<?> deleteStock(@PathVariable Long stockId) {
+        stockService.deleteStock(stockId);
         return ResponseEntity.ok().build();
     }
 }

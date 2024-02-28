@@ -40,30 +40,31 @@ public class OrderService {
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findEntityById(userRepository::findById, userId, "회원");
         Order order = createAndSaveOrder(user, orderItemDtos);
-        int totalOrderQuantity = orderItemDtos.stream()
-                .mapToInt(CreateOrderItemDto::getCount)
-                .sum();
-        saveStock(createStockDto(order, totalOrderQuantity));
         return order.getId();
     }
 
     private Order createAndSaveOrder(User user, List<CreateOrderItemDto> orderItemDtos) {
         Order order = new Order(user, OrderStatus.PREPARATION);
-        orderItemDtos.forEach(dto -> processOrderItem(dto, order));
-        return orderRepository.save(order);
+        orderItemDtos.forEach(dto -> {
+            Item item = findEntityById(itemRepository::findById, dto.getItemId(), "상품");
+            validateItemForOrder(item);
+            OrderItem orderItem = dto.toEntity(item);
+            order.addOrderItem(orderItem);
+        });
+        Order savedOrder = orderRepository.save(order);
+        savedOrder.getOrderItems().forEach(orderItem -> {
+            saveStock(createStockDto(savedOrder, orderItem));
+        });
+        return savedOrder;
     }
 
-    private void processOrderItem(CreateOrderItemDto dto, Order order) {
-        Item item = findEntityById(itemRepository::findById, dto.getItemId(), "상품");
-        validateItemForOrder(item);
-        order.addOrderItem(dto.toEntity(item));
-    }
-
-    private CreateStockDto createStockDto(Order order, int totalStockQuantity) {
+    private CreateStockDto createStockDto(Order order, OrderItem orderItem) {
         CreateStockDto stockDto = new CreateStockDto();
+        stockDto.setStockId(orderItem.getId());
         stockDto.setOrderId(order.getId());
+        stockDto.setItemId(orderItem.getItem().getId());
         stockDto.setUserId(order.getUser().getId());
-        stockDto.setStockQuantity(totalStockQuantity);
+        stockDto.setStockQuantity(orderItem.getCount());
         return stockDto;
     }
 
@@ -214,10 +215,10 @@ public class OrderService {
                 .block();
     }
 
-    private void deleteStock(Long orderId) {
-        String uri = baseUrl + "/delete/{orderId}";
+    private void deleteStock(Long stockId) {
+        String uri = baseUrl + "/delete/{stockId}";
         webClient.delete()
-                .uri(uri, orderId)
+                .uri(uri, stockId)
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
