@@ -1,5 +1,6 @@
 package com.myshop.order.service;
 
+import com.myshop.global.dto.CreateNotificationDto;
 import com.myshop.global.exception.BadRequestException;
 import com.myshop.domain.item.Item;
 import com.myshop.domain.item.ReservedItem;
@@ -9,6 +10,7 @@ import com.myshop.domain.OrderItem;
 import com.myshop.domain.OrderStatus;
 import com.myshop.order.dto.CreateOrderItemDto;
 import com.myshop.order.dto.OrderDto;
+import com.myshop.order.dto.StockDto;
 import com.myshop.order.repository.OrderRepository;
 import com.myshop.user.domain.User;
 import com.myshop.user.repository.UserRepository;
@@ -39,6 +41,10 @@ public class OrderService {
     public Long prepareOrder(Long userId, List<CreateOrderItemDto> orderItemDtos) {
         User user = findEntityById(userRepository::findById, userId, "회원");
         Order order = createAndSaveOrder(user, orderItemDtos);
+        int totalOrderQuantity = orderItemDtos.stream()
+                .mapToInt(CreateOrderItemDto::getCount)
+                .sum();
+        saveStock(createStockDto(order, totalOrderQuantity));
         return order.getId();
     }
 
@@ -51,8 +57,15 @@ public class OrderService {
     private void processOrderItem(CreateOrderItemDto dto, Order order) {
         Item item = findEntityById(itemRepository::findById, dto.getItemId(), "상품");
         validateItemForOrder(item);
-        OrderItem orderItem = dto.toEntity(item);
-        order.addOrderItem(orderItem);
+        order.addOrderItem(dto.toEntity(item));
+    }
+
+    private StockDto createStockDto(Order order, int totalStockQuantity) {
+        StockDto stockDto = new StockDto();
+        stockDto.setOrderId(order.getId());
+        stockDto.setUserId(order.getUser().getId());
+        stockDto.setStockQuantity(totalStockQuantity);
+        return stockDto;
     }
 
     @Transactional
@@ -79,6 +92,7 @@ public class OrderService {
     private OrderStatus handlePaymentFailure(Order order, OrderStatus failureStatus) {
         order.updateStatus(failureStatus);
         order.cancel();
+        deleteStock(order.getId());
         return order.getStatus();
     }
 
@@ -177,19 +191,36 @@ public class OrderService {
         }
     }
 
-    public Mono<String> updateStockQuantity(Long itemId, int stockQuantity) {
+    private final String baseUrl = "http://localhost:8085/api/internal/stocks";
+
+    private Mono<String> updateStockQuantity(Long itemId, int stockQuantity) {
+        String uri = UriComponentsBuilder.fromUriString(baseUrl + "/{itemId}")
+                .queryParam("stockQuantity", stockQuantity)
+                .buildAndExpand(itemId)
+                .toUriString();
+
         return webClient.put()
-                .uri(buildStockUpdateUri(itemId, stockQuantity))
+                .uri(uri)
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(e -> Mono.just("Error updating stock quantity: " + e.getMessage()));
     }
 
-    private String buildStockUpdateUri(Long itemId, int stockQuantity) {
-        return UriComponentsBuilder.fromHttpUrl("http://localhost:8085")
-                .path("/api/internal/stocks/{itemId}")
-                .queryParam("stockQuantity", stockQuantity)
-                .buildAndExpand(itemId)
-                .toUriString();
+    private void saveStock(StockDto stockDto) {
+        webClient.post()
+                .uri(baseUrl)
+                .bodyValue(stockDto)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+    }
+
+    private void deleteStock(Long orderId) {
+        String uri = baseUrl + "/delete/{orderId}";
+        webClient.delete()
+                .uri(uri, orderId)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
     }
 }

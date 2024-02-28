@@ -7,8 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class StockDto {
-    private Long orderId;
+public class UpdateStockDto {
     private Long userId;
     private int stockQuantity;
 }
